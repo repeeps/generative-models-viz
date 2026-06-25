@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>15 · 한 흐름 종합 — 생성모델, 눈으로 보기</title>
+<link rel="stylesheet" href="shared/theme.css">
+<link rel="icon" type="image/svg+xml" href="shared/favicon.svg">
+<style>
+  .big{font-family:'JetBrains Mono',monospace; font-size:13.5px; color:var(--ink); margin:12px 0 6px; padding:14px 16px; border-radius:14px; background:var(--panel-2); border:1px solid var(--line); line-height:1.6;}
+  .big:empty{display:none;}
+  .ctl{display:flex; align-items:center; gap:12px; margin:10px 0; flex-wrap:wrap;}
+  .ctl label{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted)}
+  svg{display:block; width:100%;}
+  code{font-family:'JetBrains Mono',monospace;background:var(--panel-2);padding:1px 5px;border-radius:5px;font-size:.92em}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topnav" id="topnav"></div>
+
+  <header>
+    <div class="tag" style="color:var(--good)">PART E · 평가·종합·너머 — CH 15</div>
+    <h1>한 흐름 종합</h1>
+    <p class="intro">먼 길을 왔어요. 이 챕터는 새 개념이 아니라 <b>지도</b>예요. 세 갈래 — VAE·GAN·Diffusion — 는 전부 0번의 한 문장 "<b>분포를 배워 뽑는다</b>"를 다르게 푼 거였어요. 잠재공간을 빚어 디코딩(VAE), 겨뤄서 만들기(GAN), 노이즈를 걷어내기(Diffusion). 각자의 장단을 한 표로 모으고, 어떤 일에 무엇을 쓸지 정리해요.</p>
+  </header>
+
+  <nav class="stepper" id="stepper">
+    <button data-s="0" class="active">00 · 공통 척추</button>
+    <button data-s="1">01 · 세 갈래 비교</button>
+    <button data-s="2">02 · 무엇을 쓸까</button>
+    <button data-s="3">03 · 정리</button>
+  </nav>
+
+  <!-- STEP 0 -->
+  <section class="panel show" data-panel="0">
+    <span class="kicker" style="color:var(--good)">Step 00 — The Shared Spine</span>
+    <h2>셋 다 "분포를 배워 뽑는다"</h2>
+    <p class="lead">겉모습은 달라도 뼈대는 같아요 — 데이터 분포를 배우고, 거기서 새 표본을 뽑죠. 다른 건 <b>"어떻게"</b>뿐이에요. 버튼으로 세 갈래의 생성 한 줄 요약을 비교해 보세요. 같은 목표, 다른 길.</p>
+    <div class="ctl" id="play0"></div>
+    <div class="scene" id="s0"></div>
+    <p class="big" id="lab0"></p>
+    <p class="note" style="margin-top:6px">→ 공통 목표: 분포 배워 뽑기. 차이는 생성하는 '방법'.</p>
+  </section>
+
+  <!-- STEP 1 -->
+  <section class="panel" data-panel="1">
+    <span class="kicker" style="color:var(--hot)">Step 01 — Three Paradigms Side by Side</span>
+    <h2>장단을 한 표로</h2>
+    <p class="lead">각 갈래의 생성 방식·강점·약점·속도를 나란히 봐요. 완벽한 하나는 없어요 — VAE는 안정적이고 잠재공간이 매끄럽지만 흐릿하고, GAN은 선명하고 빠르지만 학습이 까다롭고(모드 붕괴), Diffusion은 품질·다양성이 최고지만 여러 스텝이라 느려요(그래서 잠재확산으로 가속, 16장).</p>
+    <div class="scene" id="s1"></div>
+    <p class="big" id="lab1"></p>
+    <p class="note" style="margin-top:6px">→ 완벽한 하나는 없음. 안정(VAE)·선명·빠름(GAN)·품질(Diffusion).</p>
+  </section>
+
+  <!-- STEP 2 -->
+  <section class="panel" data-panel="2">
+    <span class="kicker" style="color:var(--v)">Step 02 — Which to Use</span>
+    <h2>일에 맞는 도구 고르기</h2>
+    <p class="lead">상황을 골라 보세요 — 무엇이 중요한지에 따라 추천이 달라져요. "최고 품질 이미지"면 Diffusion, "실시간으로 빨라야"면 GAN, "매끄러운 잠재공간으로 조작·압축"이면 VAE. 정답은 목표가 정해요.</p>
+    <div class="ctl" id="play2"></div>
+    <div class="scene" id="s2"></div>
+    <p class="big" id="lab2"></p>
+    <p class="note" style="margin-top:6px">→ 품질=Diffusion, 속도=GAN, 잠재조작=VAE. 목표가 도구를 정해요.</p>
+  </section>
+
+  <!-- STEP 3 -->
+  <section class="panel" data-panel="3">
+    <span class="kicker" style="color:var(--good)">Step 03 — Takeaways</span>
+    <h2>정리</h2>
+    <p class="lead">세 갈래는 한 척추("분포 배워 뽑기")의 세 가지 풀이예요. 각자 장단이 있고, 목표가 도구를 정하죠. 그런데 — 이들을 <b>합치면</b> 어떨까요? VAE의 잠재공간 안에서 Diffusion을 돌리면(잠재확산), 둘의 장점을 같이 누려요. 그리고 글을 만드는 또 다른 길(자기회귀)도 있죠. 마지막 챕터에서 너머의 풍경과 전체 회고로 마무리해요.</p>
+    <div class="scene" id="s3"></div>
+    <p class="big" id="lab3"></p>
+    <p class="note" style="margin-top:14px">→ 다음 → <a href="16-beyond.html" style="color:var(--v);font-weight:700">CH 16 · 너머 · 회고</a></p>
+  </section>
+
+  <p class="foot">// 코드 없는 직관 입문 · <a href="index.html">목차</a></p>
+</div>
+
+<script src="shared/lib.js"></script>
+<script src="shared/lib-gen.js"></script>
+<script>
+VZ.mountTopnav('#topnav', '15 · 한 흐름 종합');
+VZ.setupStepper();
+const G=VZ.GEN;
+
+// ===== STEP 0: shared spine =====
+(function(){
+  let sel=0;
+  const fams=[
+    {name:'VAE', how:'잠재공간을 빚어 → 정규분포서 뽑아 → 디코더로 복원', col:G.C.v},
+    {name:'GAN', how:'위조범이 노이즈에서 만들고 → 감별사와 겨뤄 다듬음', col:G.C.q},
+    {name:'Diffusion', how:'노이즈에서 → 작은 되돌리기를 반복해 → 또렷하게', col:G.C.hot},
+  ];
+  const play=document.getElementById('play0');
+  play.innerHTML=fams.map((f,i)=>`<button class="btn" id="f${i}">${f.name}</button>`).join('');
+  function render(){ const W=460,H=170; const f=fams[sel]; let s='';
+    s+=`<rect x="30" y="30" width="${W-60}" height="40" rx="10" fill="rgba(52,211,153,.08)" stroke="${G.C.good}" stroke-width="1.4"/>`;
+    s+=`<text x="${W/2}" y="55" text-anchor="middle" font-size="11.5" font-family="monospace" font-weight="700" fill="${G.C.good}">공통: 분포를 배워 → 새 표본을 뽑는다</text>`;
+    s+=`<text x="${W/2}" y="100" text-anchor="middle" font-size="12" font-family="'Pretendard'" font-weight="700" fill="${f.col}">${f.name}의 방법</text>`;
+    s+=`<text x="${W/2}" y="124" text-anchor="middle" font-size="10.5" font-family="monospace" fill="${G.C.ink}">${f.how}</text>`;
+    s+=G.glyph(W/2,150,14,0.5,0.6,{frame:false});
+    document.getElementById('s0').innerHTML=G.svg(W,H,s,'척추');
+    fams.forEach((x,i)=>document.getElementById('f'+i).className='btn'+(sel===i?' active':''));
+    document.getElementById('lab0').innerHTML=`<b style="color:${f.col}">${f.name}</b> — ${f.how}. 목표(분포 배워 뽑기)는 셋이 똑같고, 방법만 달라요.`;
+  }
+  fams.forEach((f,i)=>document.getElementById('f'+i).onclick=()=>{sel=i;render();});
+  render();
+})();
+
+// ===== STEP 1: comparison table =====
+(function(){ const W=460,H=240; let s='';
+  const cols=[['VAE',G.C.v],['GAN',G.C.q],['Diffusion',G.C.hot]];
+  const rows=[
+    ['생성 방식','잠재→디코드','겨루기','노이즈 되돌리기'],
+    ['선명도','흐릿함','선명','매우 선명'],
+    ['다양성','좋음','모드붕괴 위험','매우 좋음'],
+    ['학습','안정적','까다로움','안정적'],
+    ['속도','빠름(1번)','빠름(1번)','느림(여러 스텝)'],
+    ['잠재공간','매끄러움','암묵적','약함(압축X)*'],
+  ];
+  const x0=120, cw=110, y0=40, rh=30;
+  cols.forEach((c,j)=>{ s+=`<text x="${x0+cw*(j+0.5)}" y="${y0-8}" text-anchor="middle" font-size="11" font-family="monospace" font-weight="700" fill="${c[1]}">${c[0]}</text>`; });
+  rows.forEach((r,i)=>{ const y=y0+i*rh; s+=`<text x="20" y="${y+rh/2+4}" font-size="9.5" font-family="monospace" fill="${G.C.muted}">${r[0]}</text>`;
+    for(let j=0;j<3;j++){ const good=/매우|좋음|선명|안정|빠름|매끄/.test(r[j+1])&&!/위험|흐릿|느림|없음|약함/.test(r[j+1]);
+      s+=`<rect x="${x0+cw*j+4}" y="${y+3}" width="${cw-8}" height="${rh-6}" rx="5" fill="${cols[j][1]}" opacity="${good?0.30:0.10}"/>`;
+      s+=`<text x="${x0+cw*(j+0.5)}" y="${y+rh/2+4}" text-anchor="middle" font-size="8.8" font-family="monospace" fill="${G.C.ink}">${r[j+1]}</text>`; } });
+  s+=`<text x="20" y="${y0+rows.length*rh+12}" font-size="7.5" font-family="monospace" fill="${G.C.faint}">* 픽셀 확산엔 압축된 의미공간이 약함 — 잠재확산은 VAE 잠재공간을 빌려 씀(→16)</text>`;
+  document.getElementById('s1').innerHTML=G.svg(W,H,s,'비교표');
+  document.getElementById('lab1').innerHTML='한눈 요약: <b style="color:'+G.C.v+'">VAE</b>=안정·매끄럽지만 흐릿 · <b style="color:'+G.C.q+'">GAN</b>=선명·빠르지만 까다로움 · <b style="color:'+G.C.hot+'">Diffusion</b>=품질·다양성 최고지만 느림.';
+})();
+
+// ===== STEP 2: which to use =====
+(function(){
+  let sel=0;
+  const cases=[
+    {q:'최고 품질의 이미지가 필요해', pick:'Diffusion', why:'품질·다양성 최고. 느린 건 잠재확산으로 보완.', col:G.C.hot},
+    {q:'실시간으로 아주 빨라야 해', pick:'GAN', why:'한 번에 생성(1 스텝)이라 빠름.', col:G.C.q},
+    {q:'잠재공간을 조작·압축하고 싶어', pick:'VAE', why:'매끄러운 잠재공간 + 인코더로 압축까지.', col:G.C.v},
+  ];
+  const play=document.getElementById('play2');
+  play.innerHTML=cases.map((c,i)=>`<button class="btn" id="c${i}">상황 ${i+1}</button>`).join('');
+  function render(){ const W=460,H=150; const c=cases[sel]; let s='';
+    s+=`<text x="${W/2}" y="40" text-anchor="middle" font-size="12" font-family="'Pretendard'" fill="${G.C.ink}">"${c.q}"</text>`;
+    s+=G.arrow(W/2,52,W/2,72,{color:'var(--slate)',lw:1.4});
+    s+=`<rect x="${W/2-90}" y="80" width="180" height="44" rx="10" fill="var(--panel)" stroke="${c.col}" stroke-width="1.8"/>`;
+    s+=`<text x="${W/2}" y="100" text-anchor="middle" font-size="13" font-family="monospace" font-weight="700" fill="${c.col}">→ ${c.pick}</text>`;
+    s+=`<text x="${W/2}" y="116" text-anchor="middle" font-size="8.5" font-family="monospace" fill="${G.C.faint}">${c.why}</text>`;
+    document.getElementById('s2').innerHTML=G.svg(W,H,s,'선택');
+    cases.forEach((x,i)=>document.getElementById('c'+i).className='btn'+(sel===i?' active':''));
+    document.getElementById('lab2').innerHTML=`<b>"${c.q}"</b> → <b style="color:${c.col}">${c.pick}</b> — ${c.why}`;
+  }
+  cases.forEach((c,i)=>document.getElementById('c'+i).onclick=()=>{sel=i;render();});
+  render();
+})();
+
+// ===== STEP 3 =====
+(function(){ const W=460,H=120;
+  let s=`<text x="${W/2}" y="24" text-anchor="middle" font-size="12.5" font-family="monospace" font-weight="700" fill="${G.C.v}">한 척추, 세 가지 풀이</text>`;
+  const rows=[['VAE','잠재→디코드 (안정·매끄러움)','var(--v)'],['GAN','겨루기 (선명·빠름)','var(--q)'],['Diffusion','되돌리기 (품질 최고)','var(--hot)']];
+  rows.forEach((r,idx)=>{ const y=38+idx*26; s+=`<rect x="20" y="${y}" width="${W-40}" height="22" rx="6" fill="var(--panel)" stroke="${r[2]}" stroke-width="1.1"/><text x="34" y="${y+15}" fill="${r[2]}" font-size="11" font-family="monospace" font-weight="700">${r[0]}</text><text x="${W-30}" y="${y+15}" fill="var(--ink)" font-size="9.5" font-family="monospace" text-anchor="end">${r[1]}</text>`; });
+  document.getElementById('s3').innerHTML=G.svg(W,H,s,'정리');
+  document.getElementById('lab3').innerHTML='합치면? 잠재확산 — 다음, 너머와 회고.';
+})();
+</script>
+</body>
+</html>

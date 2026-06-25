@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>04 · 오토인코더 — 생성모델, 눈으로 보기</title>
+<link rel="stylesheet" href="shared/theme.css">
+<link rel="icon" type="image/svg+xml" href="shared/favicon.svg">
+<style>
+  .big{font-family:'JetBrains Mono',monospace; font-size:13.5px; color:var(--ink); margin:12px 0 6px; padding:14px 16px; border-radius:14px; background:var(--panel-2); border:1px solid var(--line); line-height:1.6;}
+  .big:empty{display:none;}
+  .ctl{display:flex; align-items:center; gap:12px; margin:10px 0; flex-wrap:wrap;}
+  .ctl label{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted)}
+  svg{display:block; width:100%;}
+  code{font-family:'JetBrains Mono',monospace;background:var(--panel-2);padding:1px 5px;border-radius:5px;font-size:.92em}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topnav" id="topnav"></div>
+
+  <header>
+    <div class="tag" style="color:var(--v)">PART B · 잠재변수 모델 — VAE (기둥) — CH 04</div>
+    <h1>오토인코더</h1>
+    <p class="intro">잠재공간을 처음으로 직접 만들어요. <b>오토인코더</b>는 두 부분이에요 — <b>인코더</b>가 생성물을 몇 개의 숫자(잠재좌표 z)로 <b>압축</b>하고, <b>디코더</b>가 그 숫자만으로 원본을 <b>되살려요</b>. "넣은 것과 똑같이 나오게" 훈련하면, 가운데 좁은 <b>병목</b>을 지나야 하니 모델은 어쩔 수 없이 <b>가장 중요한 특징만</b> z에 담아요. 그 z들이 사는 곳이 바로 3장의 잠재공간이에요.</p>
+  </header>
+
+  <nav class="stepper" id="stepper">
+    <button data-s="0" class="active">00 · 압축→복원</button>
+    <button data-s="1">01 · 병목이 핵심</button>
+    <button data-s="2">02 · 이게 잠재공간</button>
+    <button data-s="3">03 · 정리</button>
+  </nav>
+
+  <!-- STEP 0 -->
+  <section class="panel show" data-panel="0">
+    <span class="kicker" style="color:var(--v)">Step 00 — Compress → Reconstruct</span>
+    <h2>좁은 통로로 짜내고, 되살리기</h2>
+    <p class="lead">왼쪽에서 생성물이 들어가면 — 인코더가 두 숫자 z로 짜내고, 디코더가 그 둘만 보고 원본을 다시 그려요. 목표는 <b>입력 ≈ 출력</b>. 슬라이더로 입력을 바꾸면 z가 따라 변하고 출력도 따라와요. 단계를 눌러 데이터가 통로를 지나는 걸 보세요.</p>
+    <div class="ctl" id="play0"></div>
+    <div class="scene" id="s0"></div>
+    <p class="big" id="lab0"></p>
+    <p class="note" style="margin-top:6px">→ 인코더(압축) → z(잠재좌표) → 디코더(복원). 입력≈출력으로 훈련.</p>
+  </section>
+
+  <!-- STEP 1 -->
+  <section class="panel" data-panel="1">
+    <span class="kicker" style="color:var(--hot)">Step 01 — The Bottleneck Matters</span>
+    <h2>통로가 좁을수록 핵심만 남는다</h2>
+    <p class="lead">병목(z의 개수)을 바꿔 보세요. <b>넓으면</b> 거의 그대로 통과해 복원이 완벽하지만, 압축이 안 돼 의미 없는 잠재공간이 돼요. <b>너무 좁으면</b> 중요한 정보까지 버려 복원이 <b>뭉개져요</b>. 그 사이 — 핵심만 추리는 적당한 폭이 좋은 잠재공간을 만들어요.</p>
+    <div class="ctl" id="play1"></div>
+    <div class="scene" id="s1"></div>
+    <p class="big" id="lab1"></p>
+    <p class="note" style="margin-top:6px">→ 병목이 좁을수록 압축↑·복원 손실↑. 핵심만 남기는 폭이 적당.</p>
+  </section>
+
+  <!-- STEP 2 -->
+  <section class="panel" data-panel="2">
+    <span class="kicker" style="color:var(--q)">Step 02 — That z Is a Latent Space</span>
+    <h2>모아 보면 잠재공간이 나타난다</h2>
+    <p class="lead">여러 생성물을 인코더에 통과시켜 각각의 z를 점으로 찍으면 — 닮은 것끼리 가까이 모인 <b>잠재공간</b>이 드러나요(3장의 그 공간!). 비슷한 글리프는 이웃에, 다른 건 멀리. 점을 짚어 그 z가 어떤 생성물인지 보세요.</p>
+    <div class="ctl" id="play2"></div>
+    <div class="scene" id="s2"></div>
+    <p class="big" id="lab2"></p>
+    <p class="note" style="margin-top:6px">→ 입력들의 z를 모으면 = 잠재공간. AE가 그 좌표를 만들어줬어요.</p>
+  </section>
+
+  <!-- STEP 3 -->
+  <section class="panel" data-panel="3">
+    <span class="kicker" style="color:var(--good)">Step 03 — Takeaways</span>
+    <h2>정리</h2>
+    <p class="lead">오토인코더 = 압축(인코더)→z→복원(디코더), 입력≈출력으로 훈련하면 z에 핵심이 담겨요. 그런데 — 이 z들 <b>사이의 빈자리</b>에서 아무 좌표나 뽑아 디코더에 넣으면? 보통은 쓰레기가 나와요(3장의 '구멍'). 즉 AE는 <b>복원은 잘 해도 새로 생성하기엔 부족</b>해요. 그 빈자리를 메워 진짜 생성 모델로 만드는 게 다음 — VAE예요.</p>
+    <div class="scene" id="s3"></div>
+    <p class="big" id="lab3"></p>
+    <p class="note" style="margin-top:14px">→ 다음 → <a href="05-vae.html" style="color:var(--v);font-weight:700">CH 05 · AE의 한계 → VAE</a></p>
+  </section>
+
+  <p class="foot">// 코드 없는 직관 입문 · <a href="index.html">목차</a></p>
+</div>
+
+<script src="shared/lib.js"></script>
+<script src="shared/lib-gen.js"></script>
+<script>
+VZ.mountTopnav('#topnav', '04 · 오토인코더');
+VZ.setupStepper();
+const G=VZ.GEN;
+
+// ===== STEP 0: compress -> reconstruct =====
+(function(){
+  let z1=0.4,z2=0.6, stage=0;
+  const play=document.getElementById('play0');
+  play.innerHTML=`<button class="btn" id="prev0">◀</button><button class="btn" id="next0">다음 단계 ▶</button>`+
+                 `<label>입력 z₁ <input type="range" id="z1" min="0" max="100" value="40"></label>`+
+                 `<label>z₂ <input type="range" id="z2" min="0" max="100" value="60"></label>`;
+  const labels=['입력','인코더로 압축','잠재 z','디코더로 복원','출력 ≈ 입력'];
+  function render(){ const W=460,H=210; let s='';
+    s+=G.encDec(120,40,220,110,{hi: stage===1?'enc':(stage===2?'z':(stage===3?'dec':null))});
+    s+=G.glyph(50,95,26,z1,z2,{stroke:'var(--q)',lw:1.4,label:'입력'});
+    if(stage>=4) s+=G.glyph(410,95,26,z1,z2,{stroke:'var(--good)',lw:1.4,label:'출력'});
+    s+=`<text x="230" y="178" text-anchor="middle" font-size="11" font-family="monospace" font-weight="700" fill="${G.C.v}">${labels[Math.min(stage,4)]}</text>`;
+    document.getElementById('s0').innerHTML=G.svg(W,H,s,'압축복원');
+    document.getElementById('lab0').innerHTML= stage>=4
+      ? `복원 완료 — 출력이 입력과 거의 같죠. 디코더는 <b>z 두 숫자만</b> 보고 이걸 다시 그렸어요.`
+      : `<b style="color:${G.C.v}">${labels[Math.min(stage,4)]}</b> — 다음 ▶로 통로를 따라가 보세요. 입력 슬라이더로 글리프를 바꿔도 돼요.`;
+  }
+  document.getElementById('next0').onclick=()=>{stage=Math.min(4,stage+1);render();};
+  document.getElementById('prev0').onclick=()=>{stage=Math.max(0,stage-1);render();};
+  document.getElementById('z1').oninput=e=>{z1=e.target.value/100;render();};
+  document.getElementById('z2').oninput=e=>{z2=e.target.value/100;render();};
+  render();
+})();
+
+// ===== STEP 1: bottleneck width =====
+(function(){
+  let cap=0.5; // 0 narrow .. 1 wide
+  const play=document.getElementById('play1');
+  play.innerHTML=`<label>병목 폭 <input type="range" id="cap" min="8" max="100" value="50"></label>`;
+  function render(){ const W=460,H=200; let s='';
+    const z1=0.35,z2=0.7;
+    // reconstruction degradation: narrow cap -> higher loss (noisier output)
+    const loss=VZ.clamp(0.55*(1-cap),0,0.6);
+    s+=G.glyph(80,90,30,z1,z2,{stroke:'var(--q)',lw:1.4,label:'입력'});
+    // bottleneck visual
+    const bw=8+cap*40;
+    s+=`<rect x="${(230-bw/2).toFixed(1)}" y="${(90-22).toFixed(1)}" width="${bw.toFixed(1)}" height="44" rx="5" fill="var(--panel)" stroke="${G.C.v}" stroke-width="1.6"/>`;
+    s+=`<text x="230" y="40" text-anchor="middle" font-size="9" font-family="monospace" fill="${G.C.muted}">병목 (z 개수)</text>`;
+    s+=G.arrow(112,90,230-bw/2,90,{color:'var(--slate)',lw:1.2});
+    s+=G.arrow(230+bw/2,90,348,90,{color:'var(--slate)',lw:1.2});
+    s+=G.glyphNoisy(380,90,30,z1,z2,loss,7,{stroke:'var(--good)',label:'복원'});
+    document.getElementById('s1').innerHTML=G.svg(W,H,s,'병목');
+    document.getElementById('lab1').innerHTML= cap<0.25
+      ? `<b style="color:${G.C.dead}">너무 좁음</b> — 정보를 너무 버려 복원이 뭉개져요(노이즈). 압축은 세지만 손실이 커요.`
+      : cap>0.85 ? `<b style="color:${G.C.hot}">너무 넓음</b> — 거의 그대로 통과, 복원은 완벽하지만 <b>압축이 안 돼</b> 의미 있는 잠재공간이 안 생겨요.`
+      : `<b style="color:${G.C.good}">적당함</b> — 핵심만 추려 복원도 괜찮고 잠재공간도 쓸모 있어요.`;
+  }
+  document.getElementById('cap').oninput=e=>{cap=e.target.value/100;render();};
+  render();
+})();
+
+// ===== STEP 2: z points form a latent space =====
+(function(){
+  let sel=0;
+  const items=[]; const R=G.rng(13);
+  for(let i=0;i<12;i++){ const z1=R(), z2=R(); items.push({z1,z2}); }
+  const play=document.getElementById('play2');
+  play.innerHTML=`<button class="btn" id="prev2">◀</button><button class="btn" id="next2">다른 점 ▶</button>`;
+  function render(){ const W=460,H=240; const P=G.plane({x:60,y:18,w:300,h:200}); let s=P.frame();
+    s+=`<text x="210" y="12" text-anchor="middle" font-size="10" font-family="monospace" fill="${G.C.muted}">입력들의 z를 점으로 — 닮은 건 이웃</text>`;
+    items.forEach((it,i)=>{ const on=i===sel; s+=`<circle cx="${P.px(it.z1).toFixed(1)}" cy="${P.py(it.z2).toFixed(1)}" r="${on?6:4}" fill="${G.C.v}" stroke="${on?G.C.hot:'var(--bg)'}" stroke-width="${on?2:0.8}"/>`; });
+    s+=`<text x="60" y="232" font-size="8.5" font-family="monospace" fill="${G.C.faint}">잠재축 z₁ →</text>`;
+    const it=items[sel];
+    s+=G.glyph(410,80,28,it.z1,it.z2,{stroke:'var(--hot)',lw:1.6,label:'이 z'});
+    document.getElementById('s2').innerHTML=G.svg(W,H,s,'잠재공간');
+    document.getElementById('lab2').innerHTML=`고른 점 (z₁=${it.z1.toFixed(2)}, z₂=${it.z2.toFixed(2)})의 생성물이 오른쪽이에요. 가까운 점끼리 비슷하게 생겼죠 — 이게 4장이 만든 <b>잠재공간</b>이에요.`;
+  }
+  document.getElementById('next2').onclick=()=>{sel=(sel+1)%items.length;render();};
+  document.getElementById('prev2').onclick=()=>{sel=(sel-1+items.length)%items.length;render();};
+  render();
+})();
+
+// ===== STEP 3 =====
+(function(){ const W=460,H=120;
+  let s=`<text x="${W/2}" y="24" text-anchor="middle" font-size="12.5" font-family="monospace" font-weight="700" fill="${G.C.v}">압축→복원으로 z를 만든다</text>`;
+  const rows=[['구조','인코더→z→디코더, 입력≈출력','var(--v)'],['병목','좁을수록 핵심만(손실↑)','var(--hot)'],['한계','z 사이 빈자리=쓰레기(→05)','var(--dead)']];
+  rows.forEach((r,idx)=>{ const y=38+idx*26; s+=`<rect x="20" y="${y}" width="${W-40}" height="22" rx="6" fill="var(--panel)" stroke="${r[2]}" stroke-width="1.1"/><text x="34" y="${y+15}" fill="${r[2]}" font-size="11" font-family="monospace" font-weight="700">${r[0]}</text><text x="${W-30}" y="${y+15}" fill="var(--ink)" font-size="9.5" font-family="monospace" text-anchor="end">${r[1]}</text>`; });
+  document.getElementById('s3').innerHTML=G.svg(W,H,s,'정리');
+  document.getElementById('lab3').innerHTML='빈자리를 메워 진짜 생성으로 — 다음, VAE.';
+})();
+</script>
+</body>
+</html>

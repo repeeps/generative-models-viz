@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>03 · 잠재공간 — 생성모델, 눈으로 보기</title>
+<link rel="stylesheet" href="shared/theme.css">
+<link rel="icon" type="image/svg+xml" href="shared/favicon.svg">
+<style>
+  .big{font-family:'JetBrains Mono',monospace; font-size:13.5px; color:var(--ink); margin:12px 0 6px; padding:14px 16px; border-radius:14px; background:var(--panel-2); border:1px solid var(--line); line-height:1.6;}
+  .big:empty{display:none;}
+  .ctl{display:flex; align-items:center; gap:12px; margin:10px 0; flex-wrap:wrap;}
+  .ctl label{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted)}
+  svg{display:block; width:100%;}
+  code{font-family:'JetBrains Mono',monospace;background:var(--panel-2);padding:1px 5px;border-radius:5px;font-size:.92em}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topnav" id="topnav"></div>
+
+  <header>
+    <div class="tag" style="color:var(--q)">PART A · 생성이란 무엇인가 — CH 03</div>
+    <h1>잠재공간</h1>
+    <p class="intro">생성물 하나는 픽셀이 수백만 개지만, 그걸 정하는 <b>핵심 손잡이</b>는 몇 개뿐일 때가 많아요 — "둥근 정도", "표정", "색조"처럼. 그 몇 개의 손잡이가 사는 압축된 공간이 <b>잠재공간(latent space)</b>이에요. 좌표를 조금 움직이면 생성물이 <b>조금</b> 변하고, 두 좌표 사이를 미끄러지면 하나가 다른 하나로 <b>매끄럽게</b> 변하죠. 지금은 이 "꿈 같은 공간"이 어떤 모습일지 느껴봐요 — 그게 어디서 오는지는 다음 장(오토인코더)에서 직접 만들어요.</p>
+  </header>
+
+  <nav class="stepper" id="stepper">
+    <button data-s="0" class="active">00 · 의미 손잡이</button>
+    <button data-s="1">01 · 보간</button>
+    <button data-s="2">02 · 이게 '꿈'이다</button>
+    <button data-s="3">03 · 정리</button>
+  </nav>
+
+  <!-- STEP 0 -->
+  <section class="panel show" data-panel="0">
+    <span class="kicker" style="color:var(--q)">Step 00 — Meaning Knobs</span>
+    <h2>좌표 두 개가 생성물을 정한다</h2>
+    <p class="lead">2D 잠재공간이에요. 가로(z₁)·세로(z₂) 두 손잡이를 돌리면, 그 자리의 글리프가 정해져요. 격자를 보면 <b>이웃끼리 닮았고</b>, 멀어질수록 달라지죠 — 좌표가 "의미"를 담고 있다는 뜻이에요. 슬라이더로 한 점을 골라, 그 위치의 생성물을 키워 보세요.</p>
+    <div class="ctl" id="play0"></div>
+    <div class="scene" id="s0"></div>
+    <p class="big" id="lab0"></p>
+    <p class="note" style="margin-top:6px">→ 잠재공간 = 의미 손잡이들의 공간. 이웃 좌표 = 닮은 생성물.</p>
+  </section>
+
+  <!-- STEP 1 -->
+  <section class="panel" data-panel="1">
+    <span class="kicker" style="color:var(--hot)">Step 01 — Interpolation</span>
+    <h2>하나에서 다른 하나로, 매끄럽게</h2>
+    <p class="lead">두 글리프 A·B를 정하고, 잠재공간에서 그 사이를 <b>직선으로 미끄러지면</b> — 중간 좌표들은 A와 B의 중간 생성물이 돼요. 슬라이더를 끝에서 끝으로 옮겨 보세요. 모핑이 <b>끊김 없이</b> 이어지면, 그 공간은 "의미가 연속적으로 깔린" 좋은 잠재공간이에요.</p>
+    <div class="ctl" id="play1"></div>
+    <div class="scene" id="s1"></div>
+    <p class="big" id="lab1"></p>
+    <p class="note" style="margin-top:6px">→ 두 점 사이 보간 = 두 생성물의 중간들. 매끄러우면 좋은 공간.</p>
+  </section>
+
+  <!-- STEP 2 -->
+  <section class="panel" data-panel="2">
+    <span class="kicker" style="color:var(--v)">Step 02 — This Is the Dream</span>
+    <h2>그런데 — 이 공간은 어디서 오나</h2>
+    <p class="lead">지금까지의 매끄러운 잠재공간은 사실 <b>'꿈'</b>이에요. 좌표가 어디서 오는지, 왜 이웃이 닮아야 하는지 아직 안 정했거든요. 두 가지 큰 질문이 남아요: ① 이런 좌표를 <b>어떻게 만들까</b>(→ 04 오토인코더), ② 아무 좌표나 골라도 <b>그럴듯한 게 나올까</b>(→ 05, 보통은 빈 구멍이 생겨요). 토글로 "꿈"과 "현실의 빈자리"를 비교해 보세요.</p>
+    <div class="ctl" id="play2"></div>
+    <div class="scene" id="s2"></div>
+    <p class="big" id="lab2"></p>
+    <p class="note" style="margin-top:6px">→ 이 매끄러움은 보장된 게 아니에요 — 04에서 만들고, 05에서 채워요.</p>
+  </section>
+
+  <!-- STEP 3 -->
+  <section class="panel" data-panel="3">
+    <span class="kicker" style="color:var(--good)">Step 03 — Takeaways</span>
+    <h2>정리</h2>
+    <p class="lead">잠재공간 = 생성물을 정하는 몇 개의 의미 손잡이가 사는 공간. 이웃은 닮고, 사이를 미끄러지면 매끄럽게 변하면 — 좋은 공간이에요. 하지만 그 좌표는 거저 생기지 않아요. 다음 챕터에서 데이터를 <b>압축했다 되살리는</b> 오토인코더로, 이 잠재공간을 처음으로 직접 만들어요.</p>
+    <div class="scene" id="s3"></div>
+    <p class="big" id="lab3"></p>
+    <p class="note" style="margin-top:14px">→ 다음 → <a href="04-autoencoder.html" style="color:var(--v);font-weight:700">CH 04 · 오토인코더</a></p>
+  </section>
+
+  <p class="foot">// 코드 없는 직관 입문 · <a href="index.html">목차</a></p>
+</div>
+
+<script src="shared/lib.js"></script>
+<script src="shared/lib-gen.js"></script>
+<script>
+VZ.mountTopnav('#topnav', '03 · 잠재공간');
+VZ.setupStepper();
+const G=VZ.GEN;
+
+// ===== STEP 0: latent grid + selection =====
+(function(){
+  let z1=0.5,z2=0.5;
+  const play=document.getElementById('play0');
+  play.innerHTML=`<label>z₁ <input type="range" id="z1" min="0" max="100" value="50"></label>`+
+                 `<label>z₂ <input type="range" id="z2" min="0" max="100" value="50"></label>`;
+  function render(){ const W=460,H=270; let s=G.latentGrid(60,18,300,210,{cols:5,rows:5,sel:{z1,z2}});
+    // big preview of selected
+    s+=G.glyph(410,80,30,z1,z2,{stroke:'var(--hot)',lw:1.8,label:'선택'});
+    document.getElementById('s0').innerHTML=G.svg(W,H,s,'잠재 격자');
+    document.getElementById('lab0').innerHTML=`(z₁=${z1.toFixed(2)}, z₂=${z2.toFixed(2)}) — 주황 동그라미가 격자에서 고른 자리, 오른쪽이 그 생성물. 이웃 칸과 닮았죠?`;
+  }
+  document.getElementById('z1').oninput=e=>{z1=e.target.value/100;render();};
+  document.getElementById('z2').oninput=e=>{z2=e.target.value/100;render();};
+  render();
+})();
+
+// ===== STEP 1: interpolation =====
+(function(){
+  let t=0;
+  const A={z1:0.12,z2:0.85}, B={z1:0.9,z2:0.2};
+  const play=document.getElementById('play1');
+  play.innerHTML=`<label>A ↔ B <input type="range" id="t" min="0" max="100" value="0"></label>`;
+  function render(){ const W=460,H=210; let s='';
+    s+=`<text x="230" y="14" text-anchor="middle" font-size="10" font-family="monospace" fill="${G.C.muted}">A에서 B로 잠재공간을 미끄러지기</text>`;
+    s+=G.glyph(70,90,26,A.z1,A.z2,{label:'A'});
+    s+=G.glyph(390,90,26,B.z1,B.z2,{label:'B'});
+    const z1=A.z1+(B.z1-A.z1)*t, z2=A.z2+(B.z2-A.z2)*t;
+    const cx=70+(390-70)*t;
+    s+=`<line x1="100" y1="90" x2="360" y2="90" stroke="${G.C.line}" stroke-width="1" stroke-dasharray="3 3"/>`;
+    s+=G.glyph(VZ.clamp(cx,110,350),90,34,z1,z2,{stroke:'var(--v)',lw:1.8});
+    document.getElementById('s1').innerHTML=G.svg(W,H,s,'보간');
+    document.getElementById('lab1').innerHTML=`t=<b style="color:${G.C.v}">${t.toFixed(2)}</b> — 가운데 글리프가 A(${(1-t).toFixed(2)})와 B(${t.toFixed(2)})를 섞은 중간이에요. 슬라이더를 천천히 끌면 <b>끊김 없이</b> 모핑되죠.`;
+  }
+  document.getElementById('t').oninput=e=>{t=e.target.value/100;render();};
+  render();
+})();
+
+// ===== STEP 2: dream vs holes =====
+(function(){
+  let mode=0;
+  const play=document.getElementById('play2');
+  play.innerHTML=`<button class="btn" id="m0">꿈 (매끄러움)</button><button class="btn" id="m1">현실 (빈 구멍)</button>`;
+  // holes: some grid cells invalid -> garbage
+  function valid(z1,z2){ if(mode===0) return true; return !((z1>0.55&&z2>0.55)||(z1<0.3&&z2<0.3)||(z1>0.7&&z2<0.3)); }
+  function render(){ const W=460,H=250; let s=G.latentGrid(80,18,300,210,{cols:6,rows:6,valid});
+    document.getElementById('s2').innerHTML=G.svg(W,H,s,'꿈vs구멍');
+    document.getElementById('m0').className='btn'+(mode===0?' active':'');
+    document.getElementById('m1').className='btn'+(mode===1?' active':'');
+    document.getElementById('lab2').innerHTML= mode===0
+      ? `<b style="color:${G.C.good}">꿈</b> — 모든 좌표가 그럴듯한 생성물로 디코딩돼요. 이게 우리가 <b>원하는</b> 잠재공간.`
+      : `<b style="color:${G.C.dead}">현실</b> — 그냥 압축하면 곳곳에 <b>빈 구멍</b>이 생겨요. 그 자리를 뽑으면 노이즈 같은 쓰레기가 나오죠. 이걸 메우는 게 5장(VAE)의 일이에요.`;
+  }
+  document.getElementById('m0').onclick=()=>{mode=0;render();};
+  document.getElementById('m1').onclick=()=>{mode=1;render();};
+  render();
+})();
+
+// ===== STEP 3 =====
+(function(){ const W=460,H=120;
+  let s=`<text x="${W/2}" y="24" text-anchor="middle" font-size="12.5" font-family="monospace" font-weight="700" fill="${G.C.v}">의미 손잡이의 공간</text>`;
+  const rows=[['좌표','생성물을 정하는 몇 개의 손잡이','var(--q)'],['이웃','가까운 좌표=닮은 생성물','var(--hot)'],['꿈','매끄러움은 거저 아님(→04·05)','var(--v)']];
+  rows.forEach((r,idx)=>{ const y=38+idx*26; s+=`<rect x="20" y="${y}" width="${W-40}" height="22" rx="6" fill="var(--panel)" stroke="${r[2]}" stroke-width="1.1"/><text x="34" y="${y+15}" fill="${r[2]}" font-size="11" font-family="monospace" font-weight="700">${r[0]}</text><text x="${W-30}" y="${y+15}" fill="var(--ink)" font-size="9.5" font-family="monospace" text-anchor="end">${r[1]}</text>`; });
+  document.getElementById('s3').innerHTML=G.svg(W,H,s,'정리');
+  document.getElementById('lab3').innerHTML='이 좌표를 직접 만들러 — 다음, 오토인코더.';
+})();
+</script>
+</body>
+</html>

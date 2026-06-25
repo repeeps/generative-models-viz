@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>16 · 너머 · 회고 — 생성모델, 눈으로 보기</title>
+<link rel="stylesheet" href="shared/theme.css">
+<link rel="icon" type="image/svg+xml" href="shared/favicon.svg">
+<style>
+  .big{font-family:'JetBrains Mono',monospace; font-size:13.5px; color:var(--ink); margin:12px 0 6px; padding:14px 16px; border-radius:14px; background:var(--panel-2); border:1px solid var(--line); line-height:1.6;}
+  .big:empty{display:none;}
+  .ctl{display:flex; align-items:center; gap:12px; margin:10px 0; flex-wrap:wrap;}
+  .ctl label{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted)}
+  svg{display:block; width:100%;}
+  .recap{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin:12px 0}
+  .rcard{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+  .rcard h4{margin:0 0 4px;font-size:13px;font-family:'JetBrains Mono',monospace}
+  .rcard p{margin:0;font-size:12.5px;color:var(--muted);line-height:1.55}
+  code{font-family:'JetBrains Mono',monospace;background:var(--panel-2);padding:1px 5px;border-radius:5px;font-size:.92em}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topnav" id="topnav"></div>
+
+  <header>
+    <div class="tag" style="color:var(--good)">PART E · 평가·종합·너머 — CH 16</div>
+    <h1>너머 · 회고</h1>
+    <p class="intro">마지막 챕터예요. 먼저 두 기둥을 <b>합쳐</b> 오늘날 이미지 생성의 주력이 된 잠재확산을 보고, 글을 만드는 <b>다른 길</b>(자기회귀)을 살짝 들여다본 뒤, 너머의 풍경을 짧게 스케치하고, 트랙 전체를 한 장으로 회고해요.</p>
+  </header>
+
+  <nav class="stepper" id="stepper">
+    <button data-s="0" class="active">00 · 잠재확산</button>
+    <button data-s="1">01 · 자기회귀</button>
+    <button data-s="2">02 · 더 너머</button>
+    <button data-s="3">03 · 회고</button>
+  </nav>
+
+  <!-- STEP 0 -->
+  <section class="panel show" data-panel="0">
+    <span class="kicker" style="color:var(--good)">Step 00 — Latent Diffusion</span>
+    <h2>두 기둥을 합치다</h2>
+    <p class="lead">Diffusion은 품질이 최고지만 느려요 — 큰 이미지 픽셀을 수십 번 되돌려야 하니까. 영리한 합체: 먼저 <b>VAE 인코더</b>로 이미지를 작은 잠재공간으로 압축하고, <b>그 잠재공간 안에서 Diffusion</b>을 돌린 뒤, <b>VAE 디코더</b>로 다시 키워요. 작은 공간에서 되돌리니 훨씬 빠르죠. PART B(잠재공간)와 PART D(확산)가 한 시스템으로 만나는 순간이에요 — 이게 텍스트→이미지 주력의 핵심 구조.</p>
+    <div class="ctl" id="play0"></div>
+    <div class="scene" id="s0"></div>
+    <p class="big" id="lab0"></p>
+    <p class="note" style="margin-top:6px">→ VAE로 압축 → 잠재공간서 확산 → VAE로 복원. 빠른 고품질.</p>
+  </section>
+
+  <!-- STEP 1 -->
+  <section class="panel" data-panel="1">
+    <span class="kicker" style="color:var(--q)">Step 01 — Autoregressive</span>
+    <h2>다른 길 — 한 조각씩 쌓기</h2>
+    <p class="lead">생성에는 전혀 다른 길도 있어요. 글(문장)처럼 <b>순서가 있는</b> 것은, 앞을 보고 <b>다음 한 조각을 예측</b>하길 반복해 만들어요 — 한 글자, 또 한 글자. 이게 <b>자기회귀 생성</b>(언어모델이 글 쓰는 법)이에요. Diffusion이 "전체를 흐릿→또렷 <b>다듬기</b>"라면, 자기회귀는 "처음부터 끝까지 <b>쌓기</b>"죠. 두 방식을 토글로 비교해 보세요. (그 엔진인 트랜스포머는 별도 트랙에서.)</p>
+    <div class="ctl" id="play1"></div>
+    <div class="scene" id="s1"></div>
+    <p class="big" id="lab1"></p>
+    <p class="note" style="margin-top:6px">→ 자기회귀=한 조각씩 쌓기(글), 확산=전체를 다듬기(그림). 다른 길.</p>
+  </section>
+
+  <!-- STEP 2 -->
+  <section class="panel" data-panel="2">
+    <span class="kicker" style="color:var(--hot)">Step 02 — Further Out</span>
+    <h2>너머의 풍경</h2>
+    <p class="lead">생성모델은 이미지·글을 넘어 빠르게 번져요. 카드를 짚어 짧게 살펴보세요 — 영상·소리·3D 같은 <b>다른 매체</b>, 이미지+글을 함께 다루는 <b>멀티모달</b>, 확산보다 더 곧장 흐르게 만드는 <b>새 기법</b>들. 전부 같은 척추("분포 배워 뽑기") 위에 서 있어요.</p>
+    <div class="ctl" id="play2"></div>
+    <div class="scene" id="s2"></div>
+    <p class="big" id="lab2"></p>
+    <p class="note" style="margin-top:6px">→ 매체·멀티모달·새 기법 — 모두 같은 원리의 확장.</p>
+  </section>
+
+  <!-- STEP 3 -->
+  <section class="panel" data-panel="3">
+    <span class="kicker" style="color:var(--good)">Step 03 — Recap</span>
+    <h2>트랙 회고 — 한 장으로</h2>
+    <p class="lead">먼 길을 왔어요. 핵심만 한 장에 모았어요. 이 다섯 기둥이 머릿속에 남으면, 어떤 생성AI 글·도구를 만나도 "아, 이건 그 척추의 어느 갈래구나" 하고 자리를 잡을 수 있어요.</p>
+    <div class="recap" id="recap"></div>
+    <div class="scene" id="s3"></div>
+    <p class="big" id="lab3"></p>
+    <p class="note" style="margin-top:14px">→ 처음으로 → <a href="index.html" style="color:var(--v);font-weight:700">목차</a> · <a href="00-intro.html" style="color:var(--v);font-weight:700">0번 다시 보기</a></p>
+  </section>
+
+  <p class="foot">// 코드 없는 직관 입문 · <a href="index.html">목차</a></p>
+</div>
+
+<script src="shared/lib.js"></script>
+<script src="shared/lib-gen.js"></script>
+<script>
+VZ.mountTopnav('#topnav', '16 · 너머 · 회고');
+VZ.setupStepper();
+const G=VZ.GEN;
+
+// ===== STEP 0: latent diffusion =====
+(function(){
+  let stage=0;
+  const play=document.getElementById('play0');
+  play.innerHTML=`<button class="btn" id="prev0">◀</button><button class="btn" id="next0">다음 단계 ▶</button>`;
+  const labels=['원본 이미지','VAE 인코더로 압축','작은 잠재공간서 확산(빠름)','VAE 디코더로 복원','완성'];
+  function render(){ const W=460,H=200; let s='';
+    // pipeline: image -> [enc] -> small latent (diffusion) -> [dec] -> image
+    s+=G.glyph(50,100,24,0.4,0.6,{stroke:'var(--q)',lw:1.2,label:'이미지'});
+    s+=`<polygon points="92,72 130,90 130,110 92,128" fill="var(--panel)" stroke="${stage===1?G.C.hot:G.C.q}" stroke-width="${stage===1?2.2:1.4}"/><text x="111" y="103" text-anchor="middle" font-size="7.5" font-family="monospace" fill="${G.C.q}">enc</text>`;
+    // latent diffusion box
+    s+=`<rect x="150" y="76" width="160" height="48" rx="8" fill="${stage===2?'rgba(251,191,36,.12)':'var(--panel)'}" stroke="${stage===2?G.C.hot:G.C.v}" stroke-width="${stage===2?2.2:1.4}"/>`;
+    s+=`<text x="230" y="96" text-anchor="middle" font-size="9" font-family="monospace" font-weight="700" fill="${G.C.v}">잠재공간 속 확산</text>`;
+    s+=G.glyphNoisy(185,108,9,0.4,0.6,stage>=2?0.3:0.9,3,{}); s+=G.arrow(200,108,250,108,{color:'var(--slate)',lw:1}); s+=G.glyph(275,108,9,0.4,0.6,{frame:false});
+    s+=`<polygon points="330,90 368,72 368,128 330,110" fill="var(--panel)" stroke="${stage===3?G.C.hot:G.C.v}" stroke-width="${stage===3?2.2:1.4}"/><text x="349" y="103" text-anchor="middle" font-size="7.5" font-family="monospace" fill="${G.C.v}">dec</text>`;
+    if(stage>=4) s+=G.glyph(405,100,24,0.4,0.6,{stroke:'var(--good)',lw:1.2,label:'완성'});
+    s+=`<text x="230" y="178" text-anchor="middle" font-size="11" font-family="monospace" font-weight="700" fill="${G.C.good}">${labels[Math.min(stage,4)]}</text>`;
+    document.getElementById('s0').innerHTML=G.svg(W,H,s,'잠재확산');
+    document.getElementById('lab0').innerHTML= stage>=4
+      ? `완성! <b style="color:${G.C.v}">VAE</b>로 압축·복원하고 그 사이 <b style="color:${G.C.hot}">작은 잠재공간에서 확산</b>을 돌렸어요. 픽셀 대신 작은 공간서 되돌리니 빠르고, 품질은 확산급 — 두 기둥의 합작이에요.`
+      : `<b style="color:${G.C.hot}">${labels[Math.min(stage,4)]}</b> — 다음 ▶로 합체 파이프라인을 따라가 보세요.`;
+  }
+  document.getElementById('next0').onclick=()=>{stage=Math.min(4,stage+1);render();};
+  document.getElementById('prev0').onclick=()=>{stage=Math.max(0,stage-1);render();};
+  render();
+})();
+
+// ===== STEP 1: autoregressive vs diffusion =====
+(function(){
+  let mode=0;
+  const play=document.getElementById('play1');
+  play.innerHTML=`<button class="btn" id="m0">자기회귀 (쌓기)</button><button class="btn" id="m1">확산 (다듬기)</button>`;
+  const word=['생','성','모','델'];
+  function render(){ const W=460,H=180; let s='';
+    if(mode===0){
+      s+=`<text x="230" y="40" text-anchor="middle" font-size="10" font-family="monospace" fill="${G.C.muted}">앞을 보고 다음 한 조각을 예측 — 반복</text>`;
+      for(let i=0;i<4;i++){ const cx=110+i*80; const done=i<3;
+        s+=`<rect x="${cx-26}" y="80" width="52" height="40" rx="8" fill="${done?'rgba(55,189,248,.14)':'var(--panel)'}" stroke="${done?G.C.q:G.C.line}" stroke-width="1.4"/>`;
+        s+=`<text x="${cx}" y="106" text-anchor="middle" font-size="16" font-family="'Pretendard'" fill="${done?G.C.q:G.C.faint}">${done?word[i]:'?'}</text>`;
+        if(i<3) s+=G.arrow(cx+26,100,cx+54,100,{color:'var(--slate)',lw:1.2}); }
+      document.getElementById('lab1').innerHTML=`<b style="color:${G.C.q}">자기회귀</b> — "생","성","모"를 보고 다음 "델"을 예측. 처음부터 끝까지 <b>한 조각씩 쌓아요</b>. 글·코드·음악처럼 순서 있는 것에 강해요.`;
+    } else {
+      s+=`<text x="230" y="40" text-anchor="middle" font-size="10" font-family="monospace" fill="${G.C.muted}">전체를 흐릿→또렷하게 동시에 다듬기</text>`;
+      for(let i=0;i<4;i++){ const cx=110+i*80; s+=G.glyphNoisy(cx,100,24,0.4,0.6,1-i/3,5,{}); if(i<3) s+=G.arrow(cx+28,100,cx+52,100,{color:'var(--slate)',lw:1.2}); }
+      document.getElementById('lab1').innerHTML=`<b style="color:${G.C.hot}">확산</b> — 전체를 한꺼번에 들고, 조금씩 <b>또렷하게 다듬어요</b>. 이미지처럼 "한 덩어리"인 것에 강하죠. 쌓기 vs 다듬기 — 같은 목표, 다른 길.`;
+    }
+    document.getElementById('s1').innerHTML=G.svg(W,H,s,'두 길');
+    document.getElementById('m0').className='btn'+(mode===0?' active':'');
+    document.getElementById('m1').className='btn'+(mode===1?' active':'');
+  }
+  document.getElementById('m0').onclick=()=>{mode=0;render();};
+  document.getElementById('m1').onclick=()=>{mode=1;render();};
+  render();
+})();
+
+// ===== STEP 2: further out =====
+(function(){
+  let sel=0;
+  const items=[
+    {name:'다른 매체', d:'영상·소리·3D·분자까지 — 같은 원리로 픽셀 대신 다른 데이터를 생성.', col:G.C.q},
+    {name:'멀티모달', d:'이미지+글을 함께 다뤄 "그림 보고 설명","글 보고 그림"을 오가요.', col:G.C.v},
+    {name:'새 기법', d:'확산을 더 곧장 흐르게 만들어 적은 스텝으로 — 더 빠른 생성을 향해.', col:G.C.hot},
+  ];
+  const play=document.getElementById('play2');
+  play.innerHTML=items.map((it,i)=>`<button class="btn" id="i${i}">${it.name}</button>`).join('');
+  function render(){ const W=460,H=140; const it=items[sel]; let s='';
+    s+=`<rect x="40" y="36" width="${W-80}" height="68" rx="12" fill="var(--panel)" stroke="${it.col}" stroke-width="1.8"/>`;
+    s+=`<text x="${W/2}" y="62" text-anchor="middle" font-size="13" font-family="'Pretendard'" font-weight="700" fill="${it.col}">${it.name}</text>`;
+    s+=`<text x="${W/2}" y="86" text-anchor="middle" font-size="10" font-family="monospace" fill="${G.C.ink}">${it.d}</text>`;
+    document.getElementById('s2').innerHTML=G.svg(W,H,s,'너머');
+    items.forEach((x,i)=>document.getElementById('i'+i).className='btn'+(sel===i?' active':''));
+    document.getElementById('lab2').innerHTML=`<b style="color:${it.col}">${it.name}</b> — ${it.d}`;
+  }
+  items.forEach((it,i)=>document.getElementById('i'+i).onclick=()=>{sel=i;render();});
+  render();
+})();
+
+// ===== STEP 3: recap =====
+(function(){
+  const cards=[
+    ['A · 생성이란','분포를 배워 새 표본을 뽑기. 판별(경계)과 다른 야심.','var(--q)'],
+    ['B · VAE (기둥)','잠재공간을 빚어 디코드. 매끄럽지만 흐릿(평균).','var(--v)'],
+    ['C · GAN (다리)','위조범 vs 감별사. 선명하지만 모드붕괴 위험.','var(--q)'],
+    ['D · Diffusion (기둥)','노이즈를 반복해 걷어내기. 품질·다양성 최고.','var(--v)'],
+    ['E · 평가·종합','품질×다양성·베끼기·FID, 세 갈래 비교, 잠재확산.','var(--good)'],
+  ];
+  document.getElementById('recap').innerHTML=cards.map(c=>`<div class="rcard" style="border-color:${c[2]}"><h4 style="color:${c[2]}">${c[0]}</h4><p>${c[1]}</p></div>`).join('');
+  const W=460,H=70; let s=`<text x="${W/2}" y="42" text-anchor="middle" font-size="14" font-family="monospace" font-weight="800" fill="${G.C.good}">분포를 배워 만들어낸다 — 끝까지 왔어요 🎉</text>`;
+  document.getElementById('s3').innerHTML=G.svg(W,H,s,'회고');
+  document.getElementById('lab3').innerHTML='이 다섯 기둥이 지도예요. 어떤 새 생성 기법을 만나도, 이 척추의 어느 갈래인지 자리를 잡아보세요.';
+})();
+</script>
+</body>
+</html>

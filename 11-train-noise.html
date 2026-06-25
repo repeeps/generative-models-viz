@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>11 · 노이즈를 맞혀라 — 생성모델, 눈으로 보기</title>
+<link rel="stylesheet" href="shared/theme.css">
+<link rel="icon" type="image/svg+xml" href="shared/favicon.svg">
+<style>
+  .big{font-family:'JetBrains Mono',monospace; font-size:13.5px; color:var(--ink); margin:12px 0 6px; padding:14px 16px; border-radius:14px; background:var(--panel-2); border:1px solid var(--line); line-height:1.6;}
+  .big:empty{display:none;}
+  .ctl{display:flex; align-items:center; gap:12px; margin:10px 0; flex-wrap:wrap;}
+  .ctl label{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted)}
+  svg{display:block; width:100%;}
+  .nbox{margin:12px 0;padding:12px 14px;border-radius:12px;background:rgba(55,189,248,.08);border:1px solid var(--q);font-size:13px;line-height:1.6;color:var(--ink)}
+  .nbox b{color:var(--q)}
+  code{font-family:'JetBrains Mono',monospace;background:var(--panel-2);padding:1px 5px;border-radius:5px;font-size:.92em}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topnav" id="topnav"></div>
+
+  <header>
+    <div class="tag" style="color:var(--v)">PART D · 확산모델 — Diffusion (기둥) — CH 11</div>
+    <h1>노이즈를 맞혀라</h1>
+    <p class="intro">되돌리기를 배우는 방법이 의외로 친숙해요 — 사실 <b>회귀</b>예요(앞 트랙의 "점에 선 맞추기" 그거 맞아요). 비결은 <b>정답을 우리가 안다</b>는 것: 깨끗한 그림에 노이즈를 <b>직접 섞었으니</b>, 섞은 노이즈가 곧 정답이거든요. 그러면 "노이즈 낀 그림 → 섞인 노이즈"를 맞히도록 모델을 훈련하면 돼요. 입력과 정답이 짝지어진, 평범한 지도학습이죠.</p>
+  </header>
+
+  <nav class="stepper" id="stepper">
+    <button data-s="0" class="active">00 · 정답은 우리가 안다</button>
+    <button data-s="1">01 · 이건 회귀다</button>
+    <button data-s="2">02 · 한 모델, 모든 단계</button>
+    <button data-s="3">03 · 정리</button>
+  </nav>
+
+  <!-- STEP 0 -->
+  <section class="panel show" data-panel="0">
+    <span class="kicker" style="color:var(--v)">Step 00 — We Know the Answer</span>
+    <h2>직접 섞었으니, 정답을 안다</h2>
+    <p class="lead">훈련 예시 하나 만드는 법: ① 깨끗한 그림을 가져와, ② 무작위 단계 t를 고르고, ③ 그만큼의 노이즈를 <b>직접 섞어요</b>. 이제 입력은 "노이즈 낀 그림", 정답은 "방금 섞은 그 노이즈". 우리가 섞었으니 정답을 정확히 알죠. 단계를 눌러 예시가 만들어지는 걸 보세요. 이런 짝을 무한정 찍어낼 수 있어요.</p>
+    <div class="ctl" id="play0"></div>
+    <div class="scene" id="s0"></div>
+    <p class="big" id="lab0"></p>
+    <p class="note" style="margin-top:6px">→ 깨끗+섞은노이즈=입력, 정답=섞은 노이즈. 공짜 정답표!</p>
+  </section>
+
+  <!-- STEP 1 -->
+  <section class="panel" data-panel="1">
+    <span class="kicker" style="color:var(--hot)">Step 01 — It's Just Regression</span>
+    <h2>1번 트랙의 선 맞추기, 그대로</h2>
+    <p class="lead">모델이 노이즈를 <b>짐작</b>하면, 우리는 정답 노이즈와 비교해 <b>차이(오차)</b>를 재요. 그 오차가 줄도록 모델을 조금씩 고치죠 — 이게 정확히 앞 트랙의 회귀(잔차 줄이기)예요. 슬라이더로 모델의 짐작을 정답에 맞춰가며, 오차가 0으로 주는 걸 보세요. "예측 vs 정답의 차이를 줄인다" — 그게 전부예요.</p>
+    <div class="ctl" id="play1"></div>
+    <div class="scene" id="s1"></div>
+    <p class="big" id="lab1"></p>
+    <p class="note" style="margin-top:6px">→ 예측 노이즈 vs 정답 노이즈의 차이를 줄이는 회귀. 새 개념 없음.</p>
+  </section>
+
+  <!-- STEP 2 -->
+  <section class="panel" data-panel="2">
+    <span class="kicker" style="color:var(--q)">Step 02 — One Model, All Steps</span>
+    <h2>단계마다 따로? 아니, 하나로</h2>
+    <p class="lead">노이즈 단계는 수백 개인데, 모델을 수백 개 만들진 않아요. <b>한 모델</b>이 모든 단계를 처리하되, "지금 몇 단계짼지(t)"를 <b>같이 입력</b>받아요. 그래서 단계에 맞는 노이즈를 알맞게 짚어내죠 — 살짝 noisy한지 심하게 noisy한지에 따라 짐작의 결이 달라요. 단계를 바꿔도 같은 모델이 대응하는 걸 보세요.</p>
+    <div class="ctl" id="play2"></div>
+    <div class="scene" id="s2"></div>
+    <p class="big" id="lab2"></p>
+    <p class="note" style="margin-top:6px">→ 한 모델 + 단계 t를 입력. t에 맞춰 덜어낼 양을 조절해요.</p>
+  </section>
+
+  <!-- STEP 3 -->
+  <section class="panel" data-panel="3">
+    <span class="kicker" style="color:var(--good)">Step 03 — Takeaways</span>
+    <h2>정리</h2>
+    <p class="lead">학습 = "노이즈 낀 그림 + 단계 t → 섞인 노이즈"를 맞히는 회귀. 정답을 우리가 직접 만들어 공급하니, 끝없는 훈련 데이터로 안정적으로 배울 수 있어요(GAN의 외줄타기와 대조적). 이제 잘 훈련된 모델이 있어요. 그럼 <b>완전한 노이즈에서 시작해 새 그림을 그려내는</b> 실제 생성은 어떻게 굴러갈까요? 다음 챕터.</p>
+    <div class="scene" id="s3"></div>
+    <p class="big" id="lab3"></p>
+    <p class="note" style="margin-top:14px">→ 다음 → <a href="12-sampling-loop.html" style="color:var(--v);font-weight:700">CH 12 · 한 장을 그려내기</a></p>
+  </section>
+
+  <p class="foot">// 코드 없는 직관 입문 · <a href="index.html">목차</a></p>
+</div>
+
+<script src="shared/lib.js"></script>
+<script src="shared/lib-gen.js"></script>
+<script>
+VZ.mountTopnav('#topnav', '11 · 노이즈를 맞혀라');
+VZ.setupStepper();
+const G=VZ.GEN;
+
+// ===== STEP 0: make a training example =====
+(function(){
+  let stage=0;
+  const play=document.getElementById('play0');
+  play.innerHTML=`<button class="btn" id="prev0">◀</button><button class="btn" id="next0">다음 단계 ▶</button>`;
+  const steps=['깨끗한 그림','단계 t 고르기 (t=40)','노이즈 직접 섞기','입력 = 노이즈 낀 그림','정답 = 섞은 노이즈'];
+  function render(){ const W=460,H=190; let s='';
+    s+=G.glyph(85,90,28,0.4,0.6,{stroke:'var(--good)',lw:1.2,label:'깨끗'});
+    s+=`<text x="155" y="95" text-anchor="middle" font-size="14" font-family="monospace" fill="${stage>=2?G.C.muted:G.C.faint}">+</text>`;
+    s+=G.glyphNoisy(215,90,28,0.5,0.5,1,9,{stroke:stage>=2?'var(--hot)':'var(--line)',label:'노이즈'});
+    s+=`<text x="285" y="95" text-anchor="middle" font-size="14" font-family="monospace" fill="${stage>=3?G.C.muted:G.C.faint}">=</text>`;
+    if(stage>=3) s+=G.glyphNoisy(350,90,28,0.4,0.6,0.4,9,{stroke:'var(--v)',label:'입력'});
+    document.getElementById('s0').innerHTML=G.svg(W,H,s,'훈련 예시');
+    document.getElementById('prev0').className='btn'; document.getElementById('next0').className='btn';
+    const msg=[
+      '① 깨끗한 그림 하나로 시작해요.',
+      '② 노이즈 단계 t를 무작위로 골라요(여기선 40).',
+      '③ 그만큼의 노이즈를 <b style="color:'+G.C.hot+'">직접</b> 섞어요 — 이 노이즈가 곧 정답.',
+      '④ <b style="color:'+G.C.v+'">입력</b> = 노이즈 낀 그림. 모델은 이걸 봐요.',
+      '⑤ <b style="color:'+G.C.hot+'">정답</b> = 우리가 섞은 그 노이즈. 모델이 맞혀야 할 것.'
+    ];
+    document.getElementById('lab0').innerHTML=msg[Math.min(stage,4)];
+  }
+  document.getElementById('next0').onclick=()=>{stage=Math.min(4,stage+1);render();};
+  document.getElementById('prev0').onclick=()=>{stage=Math.max(0,stage-1);render();};
+  render();
+})();
+
+// ===== STEP 1: it's regression =====
+(function(){
+  let guess=0.2; const truth=0.7;
+  const play=document.getElementById('play1');
+  play.innerHTML=`<label>모델의 노이즈 짐작 <input type="range" id="g" min="0" max="100" value="20"></label><button class="btn" id="auto1">정답으로</button>`;
+  function render(){ const W=460,H=210; const P=G.plane({x:60,y:18,w:340,h:150}); let s=P.frame();
+    s+=`<text x="230" y="12" text-anchor="middle" font-size="10" font-family="monospace" fill="${G.C.muted}">예측 노이즈 vs 정답 노이즈 (차이=오차)</text>`;
+    // represent noise as a value on a line; truth fixed, guess movable; residual line
+    s+=`<circle cx="${P.px(truth).toFixed(1)}" cy="${P.py(0.6).toFixed(1)}" r="6" fill="${G.C.hot}"/><text x="${P.px(truth).toFixed(1)}" y="${(P.py(0.6)-12).toFixed(1)}" text-anchor="middle" font-size="9" font-family="monospace" fill="${G.C.hot}">정답</text>`;
+    s+=`<circle cx="${P.px(guess).toFixed(1)}" cy="${P.py(0.6).toFixed(1)}" r="6" fill="none" stroke="${G.C.v}" stroke-width="2"/><text x="${P.px(guess).toFixed(1)}" y="${(P.py(0.6)+18).toFixed(1)}" text-anchor="middle" font-size="9" font-family="monospace" fill="${G.C.v}">예측</text>`;
+    s+=`<line x1="${P.px(guess).toFixed(1)}" y1="${P.py(0.6).toFixed(1)}" x2="${P.px(truth).toFixed(1)}" y2="${P.py(0.6).toFixed(1)}" stroke="${G.C.dead}" stroke-width="2.4"/>`;
+    const err=Math.abs(guess-truth);
+    s+=`<text x="230" y="195" text-anchor="middle" font-size="12" font-family="monospace" font-weight="700" fill="${err<0.05?G.C.good:G.C.dead}">오차 = ${err.toFixed(2)}</text>`;
+    document.getElementById('s1').innerHTML=G.svg(W,H,s,'회귀');
+    document.getElementById('lab1').innerHTML= err<0.05
+      ? `오차 ≈ 0 — 예측이 정답 노이즈에 딱 맞았어요! 👏 이게 학습의 목표. 앞 트랙 잔차 줄이기와 똑같죠.`
+      : `빨간 막대(오차)를 줄여보세요 — 예측을 정답에 가깝게. 학습이란 이 오차를 수많은 예시에서 줄이는 거예요.`;
+  }
+  document.getElementById('g').oninput=e=>{guess=e.target.value/100;render();};
+  document.getElementById('auto1').onclick=()=>{guess=truth;document.getElementById('g').value=Math.round(truth*100);render();};
+  render();
+})();
+
+// ===== STEP 2: one model all steps =====
+(function(){
+  let t=50;
+  const play=document.getElementById('play2');
+  play.innerHTML=`<label>단계 t (모델에 같이 입력) <input type="range" id="t" min="10" max="100" value="50"></label>`;
+  function render(){ const W=460,H=190; const lvl=t/100; let s='';
+    s+=G.glyphNoisy(95,90,28,0.4,0.6,lvl,5,{stroke:'var(--dead)',label:'입력 (t='+t+')'});
+    s+=`<rect x="160" y="64" width="80" height="52" rx="8" fill="var(--panel)" stroke="${G.C.v}" stroke-width="1.8"/><text x="200" y="88" text-anchor="middle" font-size="9.5" font-family="monospace" font-weight="700" fill="${G.C.v}">한 모델</text><text x="200" y="104" text-anchor="middle" font-size="8" font-family="monospace" fill="${G.C.faint}">+ t 입력</text>`;
+    s+=G.arrow(123,90,160,90,{color:'var(--slate)',lw:1.2}); s+=G.arrow(240,90,290,90,{color:'var(--slate)',lw:1.2});
+    // removes amount proportional to level
+    s+=G.glyphNoisy(330,90,28,0.4,0.6,VZ.clamp(lvl-0.2*lvl-0.1,0,1),5,{stroke:'var(--good)',label:'덜어낸 뒤'});
+    document.getElementById('s2').innerHTML=G.svg(W,H,s,'한 모델');
+    document.getElementById('lab2').innerHTML= t<40
+      ? `t=${t}(살짝 noisy) — 섞인 노이즈가 적으니 모델이 그에 맞게 <b>섬세하게</b> 짚어요. 단계를 알기에 헷갈리지 않죠.`
+      : `t=${t}(많이 noisy) — 노이즈가 많은 단계에 맞춰 모델이 <b>그 상황에 맞는</b> 짐작을 해요. 한 모델이 t를 보고 대응하죠. (실제로 얼마씩 덜어낼지는 정해진 스케줄이 담당해요.)`;
+  }
+  document.getElementById('t').oninput=e=>{t=+e.target.value;render();};
+  render();
+})();
+
+// ===== STEP 3 =====
+(function(){ const W=460,H=120;
+  let s=`<text x="${W/2}" y="24" text-anchor="middle" font-size="12.5" font-family="monospace" font-weight="700" fill="${G.C.v}">노이즈 맞히기 = 회귀</text>`;
+  const rows=[['정답','직접 섞은 노이즈 — 공짜 정답표','var(--hot)'],['학습','예측 vs 정답 차이 줄이기','var(--v)'],['모델','하나로 모든 단계(t 입력)','var(--q)']];
+  rows.forEach((r,idx)=>{ const y=38+idx*26; s+=`<rect x="20" y="${y}" width="${W-40}" height="22" rx="6" fill="var(--panel)" stroke="${r[2]}" stroke-width="1.1"/><text x="34" y="${y+15}" fill="${r[2]}" font-size="11" font-family="monospace" font-weight="700">${r[0]}</text><text x="${W-30}" y="${y+15}" fill="var(--ink)" font-size="9.5" font-family="monospace" text-anchor="end">${r[1]}</text>`; });
+  document.getElementById('s3').innerHTML=G.svg(W,H,s,'정리');
+  document.getElementById('lab3').innerHTML='훈련된 모델로 진짜 생성하기 — 다음, 한 장을 그려내기.';
+})();
+</script>
+</body>
+</html>

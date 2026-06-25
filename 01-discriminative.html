@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>01 · 판별 vs 생성 — 생성모델, 눈으로 보기</title>
+<link rel="stylesheet" href="shared/theme.css">
+<link rel="icon" type="image/svg+xml" href="shared/favicon.svg">
+<style>
+  .big{font-family:'JetBrains Mono',monospace; font-size:13.5px; color:var(--ink); margin:12px 0 6px; padding:14px 16px; border-radius:14px; background:var(--panel-2); border:1px solid var(--line); line-height:1.6;}
+  .big:empty{display:none;}
+  .ctl{display:flex; align-items:center; gap:12px; margin:10px 0; flex-wrap:wrap;}
+  .ctl label{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted)}
+  svg{display:block; width:100%;}
+  code{font-family:'JetBrains Mono',monospace;background:var(--panel-2);padding:1px 5px;border-radius:5px;font-size:.92em}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topnav" id="topnav"></div>
+
+  <header>
+    <div class="tag" style="color:var(--q)">PART A · 생성이란 무엇인가 — CH 01</div>
+    <h1>판별 vs 생성</h1>
+    <p class="intro">두 종류의 모델이 있어요. <b>판별 모델</b>은 "이 입력은 어느 쪽?"만 답해요 — 개와 고양이 <b>사이에 경계</b>를 긋죠(앞 트랙이 한 일). <b>생성 모델</b>은 더 큰 걸 배워요 — "고양이란 대체 어떻게 생겼나"의 <b>분포 전체</b>를. 경계만 알면 새 고양이를 못 그리지만, 분포를 알면 <b>새로 뽑아낼</b> 수 있어요. 그래서 생성은 더 야심차고, 더 어려운 일이에요.</p>
+  </header>
+
+  <nav class="stepper" id="stepper">
+    <button data-s="0" class="active">00 · 경계 vs 분포</button>
+    <button data-s="1">01 · 그럴듯함을 매긴다</button>
+    <button data-s="2">02 · 분포가 있으면</button>
+    <button data-s="3">03 · 정리</button>
+  </nav>
+
+  <!-- STEP 0 -->
+  <section class="panel show" data-panel="0">
+    <span class="kicker" style="color:var(--q)">Step 00 — Boundary vs Distribution</span>
+    <h2>가르는 선이냐, 생긴 모양이냐</h2>
+    <p class="lead">같은 두 무리의 데이터예요. <b>판별</b>은 둘을 가르는 <b>경계</b> 하나만 있으면 끝 — 점이 어디 모여있든 상관없어요, 어느 쪽인지만 알면 되니까. <b>생성</b>은 각 무리가 <b>어디에 어떻게 모여 있는지</b>(분포)를 통째로 배워요. 토글로 둘이 무엇에 집중하는지 보세요.</p>
+    <div class="ctl" id="play0"></div>
+    <div class="scene" id="s0"></div>
+    <p class="big" id="lab0"></p>
+    <p class="note" style="margin-top:6px">→ 판별은 경계만, 생성은 분포 전체. 보는 것이 달라요.</p>
+  </section>
+
+  <!-- STEP 1 -->
+  <section class="panel" data-panel="1">
+    <span class="kicker" style="color:var(--hot)">Step 01 — Scoring "Plausibility"</span>
+    <h2>"이건 얼마나 그럴듯한가"</h2>
+    <p class="lead">생성 모델의 분포는 평면 어디에나 <b>그럴듯함 점수</b>를 매겨요. 데이터가 빽빽한 곳은 높고, 텅 빈 구석은 낮죠. 탐침을 움직여 보세요 — 분포 중심에선 "그럴듯하다", 바깥에선 "이상하다". 판별 모델은 이런 걸 몰라요(경계에서 어느 쪽인지만 알 뿐). 이 점수가 곧 "새로 뽑을 때 여길 뽑을 확률"이에요.</p>
+    <div class="ctl" id="play1"></div>
+    <div class="scene" id="s1"></div>
+    <p class="big" id="lab1"></p>
+    <p class="note" style="margin-top:6px">→ 분포 = 어디가 그럴듯한지의 지도. 높은 곳일수록 자주 뽑혀요.</p>
+  </section>
+
+  <!-- STEP 2 -->
+  <section class="panel" data-panel="2">
+    <span class="kicker" style="color:var(--v)">Step 02 — With a Distribution, You Can Do Both</span>
+    <h2>분포가 있으면 — 뽑기도, 가르기도</h2>
+    <p class="lead">분포를 배워두면 보너스가 있어요. 새 표본을 <b>뽑을 수 있고</b>(생성), 두 분포 중 <b>어느 쪽이 더 그럴듯한지</b>로 분류도 할 수 있어요. 즉 생성 모델은 판별도 할 수 있죠 — 단지 <b>더 많은 걸 배워야</b> 해서 어려울 뿐. ▶로 새 표본을 뽑아 보세요.</p>
+    <div class="ctl" id="play2"></div>
+    <div class="scene" id="s2"></div>
+    <p class="big" id="lab2"></p>
+    <p class="note" style="margin-top:6px">→ 생성 모델은 분류도 가능(더 많이 배움). 둘은 못 하는 일이 갈리는 게 아니에요.</p>
+  </section>
+
+  <!-- STEP 3 -->
+  <section class="panel" data-panel="3">
+    <span class="kicker" style="color:var(--good)">Step 03 — Takeaways</span>
+    <h2>정리</h2>
+    <p class="lead">판별은 경계, 생성은 분포. 생성이 더 많은 걸 배우는 야심찬 일이고, 그 보상으로 <b>새로 만들어낼</b> 수 있어요. 그럼 "분포에서 뽑는다"는 게 정확히 무슨 동작일까요? 그리고 "새롭다"는 건 베끼는 것과 어떻게 다를까요? 다음 챕터에서 그 두 박자를 자세히 봐요.</p>
+    <div class="scene" id="s3"></div>
+    <p class="big" id="lab3"></p>
+    <p class="note" style="margin-top:14px">→ 다음 → <a href="02-sampling.html" style="color:var(--v);font-weight:700">CH 02 · 분포에서 표본 뽑기</a></p>
+  </section>
+
+  <p class="foot">// 코드 없는 직관 입문 · <a href="index.html">목차</a></p>
+</div>
+
+<script src="shared/lib.js"></script>
+<script src="shared/lib-gen.js"></script>
+<script>
+VZ.mountTopnav('#topnav', '01 · 판별 vs 생성');
+VZ.setupStepper();
+const G=VZ.GEN;
+const R=G.rng(5);
+// two clusters
+const A=[],B=[];
+for(let i=0;i<22;i++){ let u=0,v=0;for(let k=0;k<3;k++){u+=R();v+=R();} A.push({x:0.30+(u/3-0.5)*0.34, y:0.62+(v/3-0.5)*0.34}); }
+for(let i=0;i<22;i++){ let u=0,v=0;for(let k=0;k<3;k++){u+=R();v+=R();} B.push({x:0.70+(u/3-0.5)*0.34, y:0.38+(v/3-0.5)*0.34}); }
+const cenA={x:0.30,y:0.62}, cenB={x:0.70,y:0.38};
+
+// ===== STEP 0 =====
+(function(){
+  let mode=0;
+  const play=document.getElementById('play0');
+  play.innerHTML=`<button class="btn" id="m0">판별</button><button class="btn" id="m1">생성</button>`;
+  function render(){ const W=460,H=240; const P=G.plane({x:70,y:18,w:330,h:200}); let s=P.frame();
+    if(mode===0){
+      s+=`<text x="235" y="12" text-anchor="middle" font-size="10" font-family="monospace" fill="${G.C.muted}">판별 — 경계 하나면 충분</text>`;
+      s+=`<line x1="${P.px(0.05)}" y1="${P.py(0.18)}" x2="${P.px(0.95)}" y2="${P.py(0.92)}" stroke="${G.C.good}" stroke-width="2.4"/>`;
+    } else {
+      s+=`<text x="235" y="12" text-anchor="middle" font-size="10" font-family="monospace" fill="${G.C.muted}">생성 — 각 무리의 분포를 통째로</text>`;
+      s+=G.density(P.px(cenA.x),P.py(cenA.y),60,60,{color:'var(--q)'});
+      s+=G.density(P.px(cenB.x),P.py(cenB.y),60,60,{color:'var(--hot)'});
+    }
+    A.forEach(p=>s+=`<circle cx="${P.px(p.x).toFixed(1)}" cy="${P.py(p.y).toFixed(1)}" r="3.4" fill="${G.C.q}" opacity="0.85"/>`);
+    B.forEach(p=>s+=`<circle cx="${P.px(p.x).toFixed(1)}" cy="${P.py(p.y).toFixed(1)}" r="3.4" fill="${G.C.hot}" opacity="0.85"/>`);
+    document.getElementById('s0').innerHTML=G.svg(W,H,s,'경계vs분포');
+    document.getElementById('m0').className='btn'+(mode===0?' active':'');
+    document.getElementById('m1').className='btn'+(mode===1?' active':'');
+    document.getElementById('lab0').innerHTML= mode===0
+      ? `<b style="color:${G.C.good}">판별</b> — 초록 경계 하나. 점이 빽빽하든 흩어졌든 관심 없어요. "선의 어느 쪽?"만 답하면 끝.`
+      : `<b style="color:${G.C.v}">생성</b> — 두 무리가 <b>각각 어디에 어떻게 퍼져 있는지</b>(옅은 구름)를 배워요. 훨씬 많은 정보죠.`;
+  }
+  document.getElementById('m0').onclick=()=>{mode=0;render();};
+  document.getElementById('m1').onclick=()=>{mode=1;render();};
+  render();
+})();
+
+// ===== STEP 1: plausibility probe =====
+(function(){
+  let px=0.5,py=0.5;
+  const play=document.getElementById('play1');
+  play.innerHTML=`<label>탐침 X <input type="range" id="px" min="2" max="98" value="50"></label>`+
+                 `<label>탐침 Y <input type="range" id="py" min="2" max="98" value="50"></label>`;
+  function dens(x,y){ const dA=Math.exp(-(((x-cenA.x)**2+(y-cenA.y)**2))/0.03); const dB=Math.exp(-(((x-cenB.x)**2+(y-cenB.y)**2))/0.03); return Math.min(1,dA+dB); }
+  function render(){ const W=460,H=240; const P=G.plane({x:70,y:18,w:330,h:200}); let s=P.frame();
+    s+=G.density(P.px(cenA.x),P.py(cenA.y),58,58,{color:'var(--q)'});
+    s+=G.density(P.px(cenB.x),P.py(cenB.y),58,58,{color:'var(--hot)'});
+    A.concat(B).forEach(p=>s+=`<circle cx="${P.px(p.x).toFixed(1)}" cy="${P.py(p.y).toFixed(1)}" r="2.4" fill="${G.C.faint}" opacity="0.5"/>`);
+    const d=dens(px,py);
+    const col = d>0.5?G.C.good:(d>0.15?G.C.hot:G.C.dead);
+    s+=`<circle cx="${P.px(px).toFixed(1)}" cy="${P.py(py).toFixed(1)}" r="7" fill="none" stroke="${col}" stroke-width="2.4"/>`;
+    s+=`<circle cx="${P.px(px).toFixed(1)}" cy="${P.py(py).toFixed(1)}" r="2.5" fill="${col}"/>`;
+    document.getElementById('s1').innerHTML=G.svg(W,H,s,'그럴듯함');
+    document.getElementById('lab1').innerHTML=`이 자리의 그럴듯함 = <b style="color:${col}">${(d*100).toFixed(0)}%</b> — ${d>0.5?'분포 중심, 아주 그럴듯해요(자주 뽑힘).':d>0.15?'가장자리, 그럭저럭.':'텅 빈 구석, 이상해요(거의 안 뽑힘).'}`;
+  }
+  document.getElementById('px').oninput=e=>{px=e.target.value/100;render();};
+  document.getElementById('py').oninput=e=>{py=e.target.value/100;render();};
+  render();
+})();
+
+// ===== STEP 2: sample + classify =====
+(function(){
+  let samples=[];
+  let seed=31;
+  const play=document.getElementById('play2');
+  play.innerHTML=`<button class="btn" id="d2">새 표본 뽑기 ▶</button><button class="btn" id="c2">비우기</button><span class="note" id="cnt2" style="margin-left:8px"></span>`;
+  function render(){ const W=460,H=240; const P=G.plane({x:70,y:18,w:330,h:200}); let s=P.frame();
+    s+=G.density(P.px(cenA.x),P.py(cenA.y),58,58,{color:'var(--q)'});
+    s+=G.density(P.px(cenB.x),P.py(cenB.y),58,58,{color:'var(--hot)'});
+    samples.forEach(p=>{ const cls=((p.x-cenA.x)**2+(p.y-cenA.y)**2)<((p.x-cenB.x)**2+(p.y-cenB.y)**2)?G.C.q:G.C.hot;
+      s+=`<circle cx="${P.px(p.x).toFixed(1)}" cy="${P.py(p.y).toFixed(1)}" r="4.5" fill="${G.C.v}" stroke="${cls}" stroke-width="2"/>`; });
+    document.getElementById('s2').innerHTML=G.svg(W,H,s,'뽑기+분류');
+    document.getElementById('cnt2').textContent=`표본 ${samples.length}개`;
+    document.getElementById('lab2').innerHTML= samples.length===0
+      ? `▶로 두 분포 중 하나에서 새 표본을 뽑아보세요. 보라 점 = 생성된 표본.`
+      : `각 보라 표본의 <b>테두리 색</b> = "어느 분포에 더 그럴듯한가"로 매긴 분류. 같은 분포 지식으로 <b>생성과 분류를 동시에</b> 해냈죠.`;
+  }
+  document.getElementById('d2').onclick=()=>{ const R2=G.rng(seed++); const useA=R2()<0.5; const c=useA?cenA:cenB;
+    let u=0,v=0;for(let k=0;k<3;k++){u+=R2();v+=R2();} samples.push({x:c.x+(u/3-0.5)*0.34, y:c.y+(v/3-0.5)*0.34}); render(); };
+  document.getElementById('c2').onclick=()=>{samples=[];render();};
+  render();
+})();
+
+// ===== STEP 3 =====
+(function(){ const W=460,H=120;
+  let s=`<text x="${W/2}" y="24" text-anchor="middle" font-size="12.5" font-family="monospace" font-weight="700" fill="${G.C.v}">경계 vs 분포</text>`;
+  const rows=[['판별','경계 하나 — 어느 쪽인지만','var(--good)'],['생성','분포 전체 — 어떻게 생겼나','var(--v)'],['보상','새로 뽑기(+분류도 가능)','var(--q)']];
+  rows.forEach((r,idx)=>{ const y=38+idx*26; s+=`<rect x="20" y="${y}" width="${W-40}" height="22" rx="6" fill="var(--panel)" stroke="${r[2]}" stroke-width="1.1"/><text x="34" y="${y+15}" fill="${r[2]}" font-size="11" font-family="monospace" font-weight="700">${r[0]}</text><text x="${W-30}" y="${y+15}" fill="var(--ink)" font-size="9.5" font-family="monospace" text-anchor="end">${r[1]}</text>`; });
+  document.getElementById('s3').innerHTML=G.svg(W,H,s,'정리');
+  document.getElementById('lab3').innerHTML='"분포에서 뽑는다"를 다음 챕터에서 자세히 — 그리고 \'새롭다\'의 의미.';
+})();
+</script>
+</body>
+</html>

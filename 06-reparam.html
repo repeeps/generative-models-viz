@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>06 · 주사위를 밖으로 — 생성모델, 눈으로 보기</title>
+<link rel="stylesheet" href="shared/theme.css">
+<link rel="icon" type="image/svg+xml" href="shared/favicon.svg">
+<style>
+  .big{font-family:'JetBrains Mono',monospace; font-size:13.5px; color:var(--ink); margin:12px 0 6px; padding:14px 16px; border-radius:14px; background:var(--panel-2); border:1px solid var(--line); line-height:1.6;}
+  .big:empty{display:none;}
+  .ctl{display:flex; align-items:center; gap:12px; margin:10px 0; flex-wrap:wrap;}
+  .ctl label{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted)}
+  svg{display:block; width:100%;}
+  .nbox{margin:12px 0;padding:12px 14px;border-radius:12px;background:rgba(192,132,252,.08);border:1px solid var(--v);font-size:13px;line-height:1.6;color:var(--ink)}
+  .nbox b{color:var(--v)}
+  code{font-family:'JetBrains Mono',monospace;background:var(--panel-2);padding:1px 5px;border-radius:5px;font-size:.92em}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topnav" id="topnav"></div>
+
+  <header>
+    <div class="tag" style="color:var(--v)">PART B · 잠재변수 모델 — VAE (기둥) — CH 06</div>
+    <h1>주사위를 밖으로</h1>
+    <p class="intro">VAE는 "구름에서 무작위로 뽑는" 단계가 있어요. 그런데 무작위가 한가운데 끼면 곤란해져요 — 결과가 나빴을 때 손잡이(중심 μ, 퍼짐 σ)를 <b>어느 쪽으로 돌려야 할지</b> 알 수가 없거든요(주사위가 다 가려버려서). 영리한 트릭이 <b>reparameterization(재매개화)</b>이에요: <b>주사위(무작위 ε)를 바깥에서 따로 굴려</b> 가져온 뒤, 손잡이로 <b>옮기고·늘리기</b>만 해요(z = μ + σ·ε). 무작위는 그대로 남기되 손잡이는 <b>조절 가능</b>해지죠.</p>
+  </header>
+
+  <nav class="stepper" id="stepper">
+    <button data-s="0" class="active">00 · 주사위 문제</button>
+    <button data-s="1">01 · 주사위를 밖으로 + 보간</button>
+    <button data-s="2">02 · 왜 흐릿한가</button>
+    <button data-s="3">03 · 정리</button>
+  </nav>
+
+  <!-- STEP 0 -->
+  <section class="panel show" data-panel="0">
+    <span class="kicker" style="color:var(--v)">Step 00 — The Dice Problem</span>
+    <h2>무작위가 한가운데 끼면</h2>
+    <p class="lead">손잡이(μ,σ)로 구름을 정하고, 그 구름 <b>안에서 무작위로</b> 한 점을 뽑아 디코더로 보낸다고 해봐요. 결과가 나쁘면 손잡이를 고쳐야 하는데 — 가운데 <b>주사위</b>가 "왜 그 점이 나왔는지"를 가려버려, <b>어느 손잡이를 어느 쪽으로</b> 돌릴지 알 수가 없어요. 토글로 주사위가 안에 있을 때의 막막함을 보세요.</p>
+    <div class="ctl" id="play0"></div>
+    <div class="scene" id="s0"></div>
+    <p class="big" id="lab0"></p>
+    <p class="note" style="margin-top:6px">→ 무작위가 경로 한가운데 있으면 손잡이 조절 신호가 끊겨요.</p>
+  </section>
+
+  <!-- STEP 1 -->
+  <section class="panel" data-panel="1">
+    <span class="kicker" style="color:var(--hot)">Step 01 — Move the Dice Out, Then Interpolate</span>
+    <h2>밖에서 굴려 와서, 옮기고 늘리기</h2>
+    <p class="lead">트릭: 주사위 ε를 <b>바깥에서 따로</b> 굴려 표준 정규분포 값 하나를 가져와요. 그다음 손잡이로 <b>옮기고(μ 더하기)·늘려요(σ 곱하기)</b> — z = μ + σ·ε. 무작위는 ε에 남았지만, 결과로 가는 길에 있는 건 이제 조절 가능한 손잡이뿐. 손잡이를 어떻게 고칠지 명확해졌죠. 그리고 보상 — μ를 옮기면 잠재공간을 미끄러지며 <b>보간 생성</b>이 돼요.</p>
+    <div class="ctl" id="play1"></div>
+    <div class="scene" id="s1"></div>
+    <p class="big" id="lab1"></p>
+    <p class="note" style="margin-top:6px">→ z=μ+σ·ε. 무작위는 밖으로, 손잡이는 안에. μ를 옮기면 보간.</p>
+  </section>
+
+  <!-- STEP 2 -->
+  <section class="panel" data-panel="2">
+    <span class="kicker" style="color:var(--q)">Step 02 — Why VAE Outputs Look Blurry</span>
+    <h2>흐릿함의 정체 = 평균내기</h2>
+    <p class="lead">VAE 생성물은 종종 <b>흐릿</b>하다고 해요. 왜일까요? 한 잠재 좌표가 "둘 중 어느 쪽일지 애매한" 입력을 담으면, VAE는 위험을 줄이려 <b>가능한 답들의 평균</b>을 내요 — 그런데 선명한 그림 둘을 평균 내면 <b>뭉개진</b> 그림이 나오죠. 토글로 "하나를 딱 고름" vs "둘을 평균냄"을 비교해 보세요. 이 흐릿함이 — 더 선명한 GAN·Diffusion이 등장한 이유예요.</p>
+    <div class="ctl" id="play2"></div>
+    <div class="scene" id="s2"></div>
+    <p class="big" id="lab2"></p>
+    <div class="nbox">🔎 <b>흐릿함은 결함이 아니라 결과</b> — "애매하면 평균" 전략의 자연스러운 부작용이에요. 평균은 안전하지만 디테일을 죽이죠. 이걸 넘어서려고 — <b>겨루기로 선명함을 강요</b>하는 GAN(C), <b>여러 번 다듬어 디테일을 살리는</b> Diffusion(D)이 나와요.</div>
+    <p class="note" style="margin-top:6px">→ 흐릿함=가능한 답의 평균. 이 한계가 GAN·Diffusion의 출발점.</p>
+  </section>
+
+  <!-- STEP 3 -->
+  <section class="panel" data-panel="3">
+    <span class="kicker" style="color:var(--good)">Step 03 — Takeaways</span>
+    <h2>정리</h2>
+    <p class="lead">reparam = 주사위(무작위)를 바깥으로 빼, 손잡이(μ,σ)를 조절 가능하게 유지하는 트릭 — 덕분에 "무작위로 뽑는" 생성을 학습시킬 수 있어요. 이로써 VAE 기둥이 완성됐어요: 매끄러운 잠재공간 + 학습 가능한 샘플링. 다만 평균내기 탓에 흐릿하죠. 이제 전혀 다른 발상으로 가요 — 두 네트워크가 <b>겨뤄서</b> 선명함을 끌어내는 GAN.</p>
+    <div class="scene" id="s3"></div>
+    <p class="big" id="lab3"></p>
+    <p class="note" style="margin-top:14px">→ 다음 → <a href="07-gan.html" style="color:var(--v);font-weight:700">CH 07 · 위조범 vs 감별사</a></p>
+  </section>
+
+  <p class="foot">// 코드 없는 직관 입문 · <a href="index.html">목차</a></p>
+</div>
+
+<script src="shared/lib.js"></script>
+<script src="shared/lib-gen.js"></script>
+<script>
+VZ.mountTopnav('#topnav', '06 · 주사위를 밖으로');
+VZ.setupStepper();
+const G=VZ.GEN;
+
+// ===== STEP 0: dice problem =====
+(function(){
+  let inside=true;
+  const play=document.getElementById('play0');
+  play.innerHTML=`<button class="btn" id="m0">주사위 안에</button><button class="btn" id="m1">주사위 밖에</button>`;
+  function render(){ const W=460,H=200; let s='';
+    // dials box -> [sample] -> decoder -> output
+    s+=`<rect x="40" y="70" width="70" height="60" rx="8" fill="var(--panel)" stroke="${G.C.v}" stroke-width="1.6"/>`;
+    s+=`<text x="75" y="95" text-anchor="middle" font-size="9" font-family="monospace" fill="${G.C.v}">손잡이</text>`;
+    s+=`<text x="75" y="110" text-anchor="middle" font-size="9" font-family="monospace" fill="${G.C.v}">μ, σ</text>`;
+    if(inside){
+      s+=`<circle cx="195" cy="100" r="22" fill="rgba(248,113,113,.18)" stroke="${G.C.dead}" stroke-width="1.6" stroke-dasharray="3 3"/>`;
+      s+=`<text x="195" y="96" text-anchor="middle" font-size="14" font-family="monospace">🎲</text>`;
+      s+=`<text x="195" y="112" text-anchor="middle" font-size="8" font-family="monospace" fill="${G.C.dead}">무작위</text>`;
+      s+=G.arrow(110,100,173,100,{color:'var(--slate)',lw:1.4});
+      s+=G.arrow(217,100,300,100,{color:'var(--slate)',lw:1.4});
+      // broken feedback
+      s+=`<path d="M300,140 Q195,180 75,140" fill="none" stroke="${G.C.dead}" stroke-width="1.4" stroke-dasharray="2 4"/>`;
+      s+=`<text x="195" y="172" text-anchor="middle" font-size="9" font-family="monospace" fill="${G.C.dead}">✗ 손잡이 조절 신호가 주사위에 막힘</text>`;
+    } else {
+      s+=`<circle cx="75" cy="40" r="16" fill="rgba(52,211,153,.16)" stroke="${G.C.good}" stroke-width="1.4"/>`;
+      s+=`<text x="75" y="45" text-anchor="middle" font-size="12" font-family="monospace">🎲</text>`;
+      s+=`<text x="120" y="38" font-size="8.5" font-family="monospace" fill="${G.C.good}">ε: 밖에서 따로 굴림</text>`;
+      s+=G.arrow(75,56,75,70,{color:G.C.good,lw:1.2});
+      s+=`<text x="195" y="96" text-anchor="middle" font-size="11" font-family="monospace" fill="${G.C.ink}">z = μ + σ·ε</text>`;
+      s+=`<text x="195" y="112" text-anchor="middle" font-size="8" font-family="monospace" fill="${G.C.faint}">옮기고·늘리기만</text>`;
+      s+=G.arrow(110,100,300,100,{color:'var(--slate)',lw:1.4});
+      s+=`<path d="M300,140 Q195,175 80,128" fill="none" stroke="${G.C.good}" stroke-width="1.4"/>`;
+      s+=`<text x="195" y="170" text-anchor="middle" font-size="9" font-family="monospace" fill="${G.C.good}">✓ 손잡이 조절 신호가 또렷</text>`;
+    }
+    s+=`<rect x="300" y="74" width="56" height="52" rx="7" fill="var(--panel)" stroke="${G.C.q}" stroke-width="1.4"/>`;
+    s+=`<text x="328" y="103" text-anchor="middle" font-size="9" font-family="monospace" fill="${G.C.q}">디코더</text>`;
+    s+=G.glyph(400,100,22,0.4,0.6,{stroke:'var(--good)',lw:1.2});
+    document.getElementById('s0').innerHTML=G.svg(W,H,s,'주사위 문제');
+    document.getElementById('m0').className='btn'+(inside?' active':'');
+    document.getElementById('m1').className='btn'+(!inside?' active':'');
+    document.getElementById('lab0').innerHTML= inside
+      ? `<b style="color:${G.C.dead}">주사위 안에</b> — 결과가 나빠도 "주사위 탓인지 손잡이 탓인지" 알 수 없어, 손잡이를 어떻게 고칠지 막막해요.`
+      : `<b style="color:${G.C.good}">주사위 밖에</b> — ε를 따로 굴려 오니, 결과→손잡이 경로가 또렷해 어떻게 고칠지 알 수 있어요.`;
+  }
+  document.getElementById('m0').onclick=()=>{inside=true;render();};
+  document.getElementById('m1').onclick=()=>{inside=false;render();};
+  render();
+})();
+
+// ===== STEP 1: reparam + interpolation =====
+(function(){
+  let mu=0.3, eps=0.0;
+  const play=document.getElementById('play1');
+  play.innerHTML=`<label>μ (중심·손잡이) <input type="range" id="mu" min="5" max="95" value="30"></label>`+
+                 `<label>ε (밖에서 굴린 주사위) <input type="range" id="ep" min="-100" max="100" value="0"></label>`;
+  const sigma=0.12;
+  function render(){ const W=460,H=200; let s='';
+    const z1=VZ.clamp(mu + sigma*eps, 0, 1);
+    s+=`<text x="230" y="20" text-anchor="middle" font-size="11" font-family="monospace" fill="${G.C.ink}">z = μ(${mu.toFixed(2)}) + σ·ε(${(sigma*eps).toFixed(2)}) = ${z1.toFixed(2)}</text>`;
+    // number line for latent z1
+    const P=G.plane({x:60,y:70,w:340,h:40});
+    s+=`<line x1="${P.px(0)}" y1="90" x2="${P.px(1)}" y2="90" stroke="${G.C.line}" stroke-width="1.4"/>`;
+    s+=`<circle cx="${P.px(mu).toFixed(1)}" cy="90" r="5" fill="${G.C.v}"/><text x="${P.px(mu).toFixed(1)}" y="78" text-anchor="middle" font-size="8" font-family="monospace" fill="${G.C.v}">μ</text>`;
+    s+=`<circle cx="${P.px(z1).toFixed(1)}" cy="90" r="6" fill="${G.C.hot}" stroke="var(--bg)" stroke-width="1.2"/><text x="${P.px(z1).toFixed(1)}" y="108" text-anchor="middle" font-size="8" font-family="monospace" fill="${G.C.hot}">z</text>`;
+    s+=G.glyph(230,160,30,z1,0.5,{stroke:'var(--hot)',lw:1.6,label:'생성물'});
+    document.getElementById('s1').innerHTML=G.svg(W,H,s,'reparam');
+    document.getElementById('lab1').innerHTML=`μ를 옮기면 생성물이 <b>매끄럽게 보간</b>돼요(보상!). ε는 밖에서 굴린 주사위 — z를 μ 주변에서 살짝 흔들 뿐, 학습되는 건 손잡이 μ·σ예요.`;
+  }
+  document.getElementById('mu').oninput=e=>{mu=e.target.value/100;render();};
+  document.getElementById('ep').oninput=e=>{eps=e.target.value/100;render();};
+  render();
+})();
+
+// ===== STEP 2: blur = averaging =====
+(function(){
+  let mode=0;
+  const play=document.getElementById('play2');
+  play.innerHTML=`<button class="btn" id="m0">하나를 딱 고름</button><button class="btn" id="m1">둘을 평균냄 (VAE)</button>`;
+  function render(){ const W=460,H=200; let s='';
+    s+=`<text x="230" y="20" text-anchor="middle" font-size="10" font-family="monospace" fill="${G.C.muted}">애매한 입력: 둥근 얼굴? 긴 얼굴?</text>`;
+    s+=G.glyph(110,100,30,0.2,0.85,{label:'후보 A'});
+    s+=G.glyph(350,100,30,0.8,0.2,{label:'후보 B'});
+    if(mode===0){
+      s+=G.glyph(230,100,34,0.2,0.85,{stroke:'var(--good)',lw:1.8,label:'A를 선택 → 선명'});
+    } else {
+      // average: overlay both faded -> muddy
+      s+=`<g opacity="0.55">${G.glyph(230,100,34,0.2,0.85,{frame:true,stroke:'var(--v)',lw:1.4})}</g>`;
+      s+=`<g opacity="0.55">${G.glyph(230,100,34,0.8,0.2,{frame:false})}</g>`;
+      s+=`<text x="230" y="152" text-anchor="middle" font-size="9" font-family="monospace" fill="${G.C.dead}">평균 → 흐릿</text>`;
+    }
+    document.getElementById('s2').innerHTML=G.svg(W,H,s,'흐릿함');
+    document.getElementById('m0').className='btn'+(mode===0?' active':'');
+    document.getElementById('m1').className='btn'+(mode===1?' active':'');
+    document.getElementById('lab2').innerHTML= mode===0
+      ? `<b style="color:${G.C.good}">하나를 딱 고르면</b> 선명해요. 하지만 어느 쪽일지 자신 없으면 위험하죠(틀리면 크게 틀림).`
+      : `<b style="color:${G.C.dead}">평균내기(VAE의 안전책)</b> — 두 선명한 후보를 겹쳐 평균 내니 <b>뭉개졌어요</b>. 이게 VAE가 흐릿한 이유예요.`;
+  }
+  document.getElementById('m0').onclick=()=>{mode=0;render();};
+  document.getElementById('m1').onclick=()=>{mode=1;render();};
+  render();
+})();
+
+// ===== STEP 3 =====
+(function(){ const W=460,H=120;
+  let s=`<text x="${W/2}" y="24" text-anchor="middle" font-size="12.5" font-family="monospace" font-weight="700" fill="${G.C.v}">주사위는 밖, 손잡이는 안</text>`;
+  const rows=[['reparam','z=μ+σ·ε — 무작위를 분리','var(--v)'],['보상','학습 가능 + μ 이동=보간','var(--hot)'],['한계','평균내기 → 흐릿(→GAN·Diffusion)','var(--dead)']];
+  rows.forEach((r,idx)=>{ const y=38+idx*26; s+=`<rect x="20" y="${y}" width="${W-40}" height="22" rx="6" fill="var(--panel)" stroke="${r[2]}" stroke-width="1.1"/><text x="34" y="${y+15}" fill="${r[2]}" font-size="11" font-family="monospace" font-weight="700">${r[0]}</text><text x="${W-30}" y="${y+15}" fill="var(--ink)" font-size="9.5" font-family="monospace" text-anchor="end">${r[1]}</text>`; });
+  document.getElementById('s3').innerHTML=G.svg(W,H,s,'정리');
+  document.getElementById('lab3').innerHTML='겨뤄서 선명함을 끌어내는 발상 — 다음, GAN.';
+})();
+</script>
+</body>
+</html>

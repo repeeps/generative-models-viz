@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>14 · 잘 만들었나? — 생성모델, 눈으로 보기</title>
+<link rel="stylesheet" href="shared/theme.css">
+<link rel="icon" type="image/svg+xml" href="shared/favicon.svg">
+<style>
+  .big{font-family:'JetBrains Mono',monospace; font-size:13.5px; color:var(--ink); margin:12px 0 6px; padding:14px 16px; border-radius:14px; background:var(--panel-2); border:1px solid var(--line); line-height:1.6;}
+  .big:empty{display:none;}
+  .ctl{display:flex; align-items:center; gap:12px; margin:10px 0; flex-wrap:wrap;}
+  .ctl label{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted)}
+  svg{display:block; width:100%;}
+  code{font-family:'JetBrains Mono',monospace;background:var(--panel-2);padding:1px 5px;border-radius:5px;font-size:.92em}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topnav" id="topnav"></div>
+
+  <header>
+    <div class="tag" style="color:var(--good)">PART E · 평가·종합·너머 — CH 14</div>
+    <h1>잘 만들었나?</h1>
+    <p class="intro">생성모델 채점은 분류처럼 "정답과 비교"가 안 돼요 — 새로 만든 거니 정답이 없거든요. 그래서 두 가지를 함께 봐요: <b>품질</b>(하나하나 그럴듯한가)과 <b>다양성</b>(여러 종류를 두루 만드나). 하나만 좋아선 안 돼요 — 선명해도 한 종류만이면(모드 붕괴), 다양해도 다 엉성하면 실패죠. 게다가 훈련 데이터를 <b>베끼는</b> 반칙도 걸러내야 해요. 이 셋을 어떻게 재는지 봐요.</p>
+  </header>
+
+  <nav class="stepper" id="stepper">
+    <button data-s="0" class="active">00 · 품질 × 다양성</button>
+    <button data-s="1">01 · 베끼기 함정</button>
+    <button data-s="2">02 · FID = 두 무리 비교</button>
+    <button data-s="3">03 · 정리</button>
+  </nav>
+
+  <!-- STEP 0 -->
+  <section class="panel show" data-panel="0">
+    <span class="kicker" style="color:var(--good)">Step 00 — Quality × Diversity</span>
+    <h2>둘 다 좋아야 한다</h2>
+    <p class="lead">두 손잡이로 모델의 두 성질을 바꿔 보세요. <b>품질</b>만 높고 다양성이 낮으면 — 선명한데 다 똑같아요(모드 붕괴). <b>다양성</b>만 높고 품질이 낮으면 — 종류는 많은데 다 엉성하죠. 좋은 생성은 <b>둘 다</b> 높은 거예요. 앞 트랙의 "정확도 하나로 속지 말기"와 같은 정신이에요.</p>
+    <div class="ctl" id="play0"></div>
+    <div class="scene" id="s0"></div>
+    <p class="big" id="lab0"></p>
+    <p class="note" style="margin-top:6px">→ 품질·다양성은 따로. 한 숫자로 뭉뚱그리면 속아요.</p>
+  </section>
+
+  <!-- STEP 1 -->
+  <section class="panel" data-panel="1">
+    <span class="kicker" style="color:var(--hot)">Step 01 — The Copying Trap</span>
+    <h2>"새로 만든 척" 베끼기</h2>
+    <p class="lead">아주 그럴듯하고 다양해 보여도 — 사실 훈련 데이터를 거의 <b>베껴</b> 내놓은 거라면 생성이라 할 수 없어요(2장·8장의 암기). 잡아내는 법: 생성물마다 <b>가장 가까운 훈련 데이터와의 거리</b>를 봐요. 거리가 거의 0이면 복사본이죠. 토글로 "진짜 새것" vs "베끼기"를 비교하세요.</p>
+    <div class="ctl" id="play1"></div>
+    <div class="scene" id="s1"></div>
+    <p class="big" id="lab1"></p>
+    <p class="note" style="margin-top:6px">→ 생성물↔가장 가까운 훈련데이터 거리. 0에 가까우면 베끼기.</p>
+  </section>
+
+  <!-- STEP 2 -->
+  <section class="panel" data-panel="2">
+    <span class="kicker" style="color:var(--v)">Step 02 — FID: Comparing Two Clouds</span>
+    <h2>두 무리의 모양을 비교한다</h2>
+    <p class="lead">가장 널리 쓰는 점수가 <b>FID</b>예요. 핵심 — 한 장을 채점하는 게 <b>아니라</b>, <b>진짜 데이터 한 무리</b>와 <b>생성물 한 무리</b>의 <b>전체 분포(퍼진 모양)</b>를 통째로 비교해요. 두 구름이 많이 겹칠수록 점수가 낮고(좋음), 어긋날수록 높아요(나쁨). 모델 품질을 바꿔 두 구름이 겹쳐지며 FID가 내려가는 걸 보세요.</p>
+    <div class="ctl" id="play2"></div>
+    <div class="scene" id="s2"></div>
+    <p class="big" id="lab2"></p>
+    <p class="note" style="margin-top:6px">→ FID = 진짜무리 vs 생성무리 분포 비교. 낮을수록 좋음. 개별 점수 아님.</p>
+  </section>
+
+  <!-- STEP 3 -->
+  <section class="panel" data-panel="3">
+    <span class="kicker" style="color:var(--good)">Step 03 — Takeaways</span>
+    <h2>정리</h2>
+    <p class="lead">생성 평가 = 품질 + 다양성 + 베끼지 않기를 함께 보기. FID는 두 무리의 분포를 비교해 한 숫자로 요약하되(낮을수록 좋음), 베끼기·미묘한 결함은 못 잡으니 한 점수만 믿으면 안 돼요 — 사람 눈도 함께. 이제 VAE·GAN·Diffusion 세 갈래를 다 봤어요. 한 흐름·한 표로 정리할 시간이에요.</p>
+    <div class="scene" id="s3"></div>
+    <p class="big" id="lab3"></p>
+    <p class="note" style="margin-top:14px">→ 다음 → <a href="15-pipeline.html" style="color:var(--v);font-weight:700">CH 15 · 한 흐름 종합</a></p>
+  </section>
+
+  <p class="foot">// 코드 없는 직관 입문 · <a href="index.html">목차</a></p>
+</div>
+
+<script src="shared/lib.js"></script>
+<script src="shared/lib-gen.js"></script>
+<script>
+VZ.mountTopnav('#topnav', '14 · 잘 만들었나?');
+VZ.setupStepper();
+const G=VZ.GEN;
+
+// ===== STEP 0: quality x diversity =====
+(function(){
+  let q=0.5, d=0.5;
+  const play=document.getElementById('play0');
+  play.innerHTML=`<label>품질 <input type="range" id="q" min="0" max="100" value="50"></label>`+
+                 `<label>다양성 <input type="range" id="d" min="0" max="100" value="50"></label>`;
+  function render(){ const W=460,H=190; let s='';
+    const R=G.rng(5);
+    for(let i=0;i<6;i++){ const cx=70+(i%6)*65; const z1=0.5+(R()-0.5)*2*(0.45*d); const z2=0.5+(R()-0.5)*2*(0.45*d);
+      s+=G.glyphNoisy(cx,90,24,VZ.clamp(z1,0,1),VZ.clamp(z2,0,1),VZ.clamp(0.6*(1-q),0,0.6),i*9+3,{}); }
+    document.getElementById('s0').innerHTML=G.svg(W,H,s,'품질다양성');
+    const verdict = (q>0.6&&d>0.6)?['좋은 생성',G.C.good]: (q>0.6&&d<=0.4)?['모드 붕괴 (선명한데 다 똑같음)',G.C.dead]: (q<=0.4&&d>0.6)?['엉성 (다양한데 흐릿/깨짐)',G.C.dead]:['그저그럼',G.C.hot];
+    document.getElementById('lab0').innerHTML=`품질 ${(q*100|0)} · 다양성 ${(d*100|0)} → <b style="color:${verdict[1]}">${verdict[0]}</b>. ${(q>0.6&&d>0.6)?'둘 다 높아야 진짜 좋은 생성이에요.':'한쪽만 높으면 실패예요.'}`;
+  }
+  document.getElementById('q').oninput=e=>{q=e.target.value/100;render();};
+  document.getElementById('d').oninput=e=>{d=e.target.value/100;render();};
+  render();
+})();
+
+// ===== STEP 1: copying trap =====
+(function(){
+  let mode=0;
+  const play=document.getElementById('play1');
+  play.innerHTML=`<button class="btn" id="m0">진짜 새것</button><button class="btn" id="m1">베끼기 (암기)</button>`;
+  const R=G.rng(11); const train=[]; for(let i=0;i<8;i++) train.push({x:0.15+R()*0.7, y:0.2+R()*0.6});
+  function render(){ const W=460,H=220; const P=G.plane({x:60,y:18,w:340,h:170}); let s=P.frame();
+    s+=`<text x="230" y="12" text-anchor="middle" font-size="10" font-family="monospace" fill="${G.C.muted}">청록=훈련데이터, 보라=생성물, 선=가장 가까운 거리</text>`;
+    train.forEach(p=>s+=`<circle cx="${P.px(p.x).toFixed(1)}" cy="${P.py(p.y).toFixed(1)}" r="4" fill="${G.C.q}"/>`);
+    const R2=G.rng(mode===0?71:72); const gen=[];
+    for(let i=0;i<6;i++){ if(mode===0){ gen.push({x:0.12+R2()*0.76,y:0.15+R2()*0.7}); } else { const t=train[Math.floor(R2()*train.length)]; gen.push({x:t.x+(R2()-0.5)*0.015,y:t.y+(R2()-0.5)*0.015}); } }
+    gen.forEach(p=>{ // nearest train
+      let best=train[0],dd=9; train.forEach(t=>{const e=Math.hypot(p.x-t.x,p.y-t.y); if(e<dd){dd=e;best=t;}});
+      s+=`<line x1="${P.px(p.x).toFixed(1)}" y1="${P.py(p.y).toFixed(1)}" x2="${P.px(best.x).toFixed(1)}" y2="${P.py(best.y).toFixed(1)}" stroke="${dd<0.04?G.C.dead:G.C.faint}" stroke-width="1.4" stroke-dasharray="3 2"/>`;
+      s+=`<circle cx="${P.px(p.x).toFixed(1)}" cy="${P.py(p.y).toFixed(1)}" r="4.5" fill="${G.C.v}" stroke="var(--bg)" stroke-width="0.8"/>`; });
+    document.getElementById('s1').innerHTML=G.svg(W,H,s,'베끼기');
+    document.getElementById('m0').className='btn'+(mode===0?' active':'');
+    document.getElementById('m1').className='btn'+(mode===1?' active':'');
+    document.getElementById('lab1').innerHTML= mode===0
+      ? `<b style="color:${G.C.good}">진짜 새것</b> — 보라 생성물이 청록 훈련점에서 <b>떨어져</b> 있어요(거리 큼). 새로 만든 거죠.`
+      : `<b style="color:${G.C.dead}">베끼기</b> — 보라가 청록 위에 거의 겹쳐요(거리≈0, 빨간 선). 그럴듯해 보여도 <b>복사본</b>이에요. 품질·다양성만 보면 안 들켜요.`;
+  }
+  document.getElementById('m0').onclick=()=>{mode=0;render();};
+  document.getElementById('m1').onclick=()=>{mode=1;render();};
+  render();
+})();
+
+// ===== STEP 2: FID two clouds =====
+(function(){
+  let q=0.2;
+  const play=document.getElementById('play2');
+  play.innerHTML=`<label>모델 품질 <input type="range" id="q" min="0" max="100" value="20"></label>`;
+  const Rr=G.rng(3); const real=[]; for(let i=0;i<30;i++){ let u=0,v=0;for(let k=0;k<3;k++){u+=Rr();v+=Rr();} real.push({x:0.4+(u/3-0.5)*0.5,y:0.55+(v/3-0.5)*0.5}); }
+  function render(){ const W=460,H=230; const P=G.plane({x:60,y:18,w:300,h:200}); let s=P.frame();
+    s+=`<text x="210" y="12" text-anchor="middle" font-size="10" font-family="monospace" fill="${G.C.muted}">진짜 무리(청록) vs 생성 무리(보라)</text>`;
+    real.forEach(p=>s+=`<circle cx="${P.px(p.x).toFixed(1)}" cy="${P.py(p.y).toFixed(1)}" r="3" fill="${G.C.q}" opacity="0.6"/>`);
+    // generated cloud: offset & spread depending on quality (q high -> overlaps real)
+    const Rg=G.rng(8); const ox=(1-q)*0.32, oy=-(1-q)*0.28; const gen=[];
+    for(let i=0;i<30;i++){ let u=0,v=0;for(let k=0;k<3;k++){u+=Rg();v+=Rg();} gen.push({x:VZ.clamp(0.4+ox+(u/3-0.5)*0.5,0,1),y:VZ.clamp(0.55+oy+(v/3-0.5)*0.5,0,1)}); }
+    gen.forEach(p=>s+=`<circle cx="${P.px(p.x).toFixed(1)}" cy="${P.py(p.y).toFixed(1)}" r="3" fill="${G.C.v}" opacity="0.6"/>`);
+    // FID-ish = distance between cloud centers + spread diff
+    const fid=Math.round((Math.hypot(ox,oy))*120);
+    s+=G.gauge(410,90,{val:VZ.clamp(1-fid/40,0,1),label:'겹침',color:G.C.good,w:80});
+    s+=`<text x="410" y="140" text-anchor="middle" font-size="13" font-family="monospace" font-weight="700" fill="${fid<8?G.C.good:G.C.dead}">FID ${fid}</text>`;
+    s+=`<text x="410" y="156" text-anchor="middle" font-size="8" font-family="monospace" fill="${G.C.faint}">낮을수록 좋음</text>`;
+    document.getElementById('s2').innerHTML=G.svg(W,H,s,'FID');
+    document.getElementById('lab2').innerHTML= q>0.8
+      ? `<b style="color:${G.C.good}">FID ${fid}</b> — 두 무리가 거의 겹쳐요. 생성 분포가 진짜 분포를 잘 닮았다는 뜻. 품질을 낮춰 무리가 어긋나면 FID가 치솟아요.`
+      : `<b style="color:${G.C.dead}">FID ${fid}</b> — 보라(생성) 무리가 청록(진짜)에서 어긋나 있어요. 한 장이 아니라 <b>무리 전체의 모양</b>을 비교한 점수예요.`;
+  }
+  document.getElementById('q').oninput=e=>{q=e.target.value/100;render();};
+  render();
+})();
+
+// ===== STEP 3 =====
+(function(){ const W=460,H=120;
+  let s=`<text x="${W/2}" y="24" text-anchor="middle" font-size="12.5" font-family="monospace" font-weight="700" fill="${G.C.v}">품질·다양성·베끼지 않기</text>`;
+  const rows=[['두 축','품질 ∧ 다양성 (하나론 부족)','var(--good)'],['반칙','훈련 베끼기(거리≈0) 걸러내기','var(--hot)'],['FID','두 무리 분포 비교(낮을수록↑)','var(--v)']];
+  rows.forEach((r,idx)=>{ const y=38+idx*26; s+=`<rect x="20" y="${y}" width="${W-40}" height="22" rx="6" fill="var(--panel)" stroke="${r[2]}" stroke-width="1.1"/><text x="34" y="${y+15}" fill="${r[2]}" font-size="11" font-family="monospace" font-weight="700">${r[0]}</text><text x="${W-30}" y="${y+15}" fill="var(--ink)" font-size="9.5" font-family="monospace" text-anchor="end">${r[1]}</text>`; });
+  document.getElementById('s3').innerHTML=G.svg(W,H,s,'정리');
+  document.getElementById('lab3').innerHTML='세 갈래를 한 표로 — 다음, 한 흐름 종합.';
+})();
+</script>
+</body>
+</html>

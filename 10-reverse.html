@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>10 · 노이즈 걷어내기 — 생성모델, 눈으로 보기</title>
+<link rel="stylesheet" href="shared/theme.css">
+<link rel="icon" type="image/svg+xml" href="shared/favicon.svg">
+<style>
+  .big{font-family:'JetBrains Mono',monospace; font-size:13.5px; color:var(--ink); margin:12px 0 6px; padding:14px 16px; border-radius:14px; background:var(--panel-2); border:1px solid var(--line); line-height:1.6;}
+  .big:empty{display:none;}
+  .ctl{display:flex; align-items:center; gap:12px; margin:10px 0; flex-wrap:wrap;}
+  .ctl label{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted)}
+  svg{display:block; width:100%;}
+  .nbox{margin:12px 0;padding:12px 14px;border-radius:12px;background:rgba(192,132,252,.08);border:1px solid var(--v);font-size:13px;line-height:1.6;color:var(--ink)}
+  .nbox b{color:var(--v)}
+  code{font-family:'JetBrains Mono',monospace;background:var(--panel-2);padding:1px 5px;border-radius:5px;font-size:.92em}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topnav" id="topnav"></div>
+
+  <header>
+    <div class="tag" style="color:var(--v)">PART D · 확산모델 — Diffusion (기둥) — CH 10</div>
+    <h1>노이즈 걷어내기</h1>
+    <p class="intro">이제 반대 방향이에요. 모델은 노이즈 낀 그림을 받아 — 한 번에 깨끗하게 만드는 게 아니라 — <b>딱 한 스텝만</b> 살짝 덜 noisy하게 되돌려요. "이 그림에 섞인 노이즈가 대충 이거겠지" 하고 짐작해 그만큼 덜어내는 거죠. 중요한 두 가지: ① 이건 <b>한 작은 스텝</b>일 뿐(한 번에 그림 한 장이 아니에요), ② 짐작이라 <b>정확한 역연산이 아니라 배운 근사</b>예요.</p>
+  </header>
+
+  <nav class="stepper" id="stepper">
+    <button data-s="0" class="active">00 · 한 스텝만</button>
+    <button data-s="1">01 · 노이즈=깨끗한쪽, 같은 말</button>
+    <button data-s="2">02 · 배운 근사</button>
+    <button data-s="3">03 · 정리</button>
+  </nav>
+
+  <!-- STEP 0 -->
+  <section class="panel show" data-panel="0">
+    <span class="kicker" style="color:var(--v)">Step 00 — Just One Step</span>
+    <h2>한 번에 조금만 덜어낸다</h2>
+    <p class="lead">노이즈 낀 그림(왼쪽)을 모델에 넣으면, <b>약간</b> 더 또렷해진 그림(오른쪽)이 나와요 — 완성이 아니라 한 걸음. 슬라이더로 현재 노이즈 단계를 정하고, 한 스텝의 효과를 보세요. 깨끗한 t=0까지 가려면 이 작은 스텝을 <b>여러 번 반복</b>해야 해요(그건 12장).</p>
+    <div class="ctl" id="play0"></div>
+    <div class="scene" id="s0"></div>
+    <p class="big" id="lab0"></p>
+    <p class="note" style="margin-top:6px">→ 한 스텝 = 살짝만 덜 noisy하게. 한 스텝 ≠ 완성된 한 장.</p>
+  </section>
+
+  <!-- STEP 1 -->
+  <section class="panel" data-panel="1">
+    <span class="kicker" style="color:var(--hot)">Step 01 — "Predict Noise" = "Predict Clean"</span>
+    <h2>노이즈를 맞히든, 깨끗한 쪽을 맞히든</h2>
+    <p class="lead">헷갈리기 쉬운 점 — 모델이 맞히는 게 "섞인 <b>노이즈</b>"일까, "<b>깨끗한</b> 원본"일까? 사실 <b>같은 말</b>이에요. 노이즈 낀 그림 = 깨끗한 그림 + 노이즈 니까, 둘 중 하나만 알면 빼서 나머지를 알 수 있죠. 토글로 두 관점을 오가며 결과가 같음을 보세요. (학습은 보통 '노이즈 맞히기'로 해요 — 다음 장.)</p>
+    <div class="ctl" id="play1"></div>
+    <div class="scene" id="s1"></div>
+    <p class="big" id="lab1"></p>
+    <p class="note" style="margin-top:6px">→ 노이즈 낀 = 깨끗 + 노이즈. 하나 알면 빼서 다른 하나. 같은 일.</p>
+  </section>
+
+  <!-- STEP 2 -->
+  <section class="panel" data-panel="2">
+    <span class="kicker" style="color:var(--q)">Step 02 — A Learned Guess, Not Exact</span>
+    <h2>원본이 아니라 '그럴듯한 부류'로</h2>
+    <p class="lead">되돌리기는 <b>정확한 역연산이 아니에요</b>. 같은 노이즈에서 출발해도, 원래 어떤 그림이었는지는 알 수 없거든요(여러 그림이 같은 노이즈로 무너지니까). 그래서 모델은 "이 노이즈라면 <b>그럴듯한 깨끗한 그림</b>은 이쯤"이라고 배운 짐작을 해요. 여러 노이즈 점이 자기 원본이 아니라 <b>데이터 부류 쪽으로</b> 흘러가는 걸 보세요.</p>
+    <div class="ctl" id="play2"></div>
+    <div class="scene" id="s2"></div>
+    <p class="big" id="lab2"></p>
+    <div class="nbox">🧭 <b>"원본 복원"이 아니라 "부류로 끌어당기기"</b> — 되돌리기 스텝은 노이즈 점을 그것의 옛 원본이 아니라, <b>그럴듯한 데이터가 모인 곳</b>으로 조금 밀어요. 그래서 매번 다른 새 그림이 나와요(이게 생성!). 정확한 역재생이라면 늘 같은 게 나오겠죠.</div>
+    <p class="note" style="margin-top:6px">→ 배운 근사 · 부류로 끌어당김. 그래서 매번 새것이 나와요.</p>
+  </section>
+
+  <!-- STEP 3 -->
+  <section class="panel" data-panel="3">
+    <span class="kicker" style="color:var(--good)">Step 03 — Takeaways</span>
+    <h2>정리</h2>
+    <p class="lead">되돌리기 = 한 스텝씩 노이즈를 덜어내는 <b>배운 근사</b>. 노이즈를 맞히는 것과 깨끗한 쪽을 맞히는 건 같은 말이고, 결과는 원본 복원이 아니라 그럴듯한 부류로의 이동이에요. 그럼 이 "한 스텝 되돌리기"를 <b>어떻게 학습</b>시킬까요? 놀랍게도 — 앞 트랙의 <b>회귀</b>와 똑같은 방식이에요. 다음 챕터.</p>
+    <div class="scene" id="s3"></div>
+    <p class="big" id="lab3"></p>
+    <p class="note" style="margin-top:14px">→ 다음 → <a href="11-train-noise.html" style="color:var(--v);font-weight:700">CH 11 · 노이즈를 맞혀라</a></p>
+  </section>
+
+  <p class="foot">// 코드 없는 직관 입문 · <a href="index.html">목차</a></p>
+</div>
+
+<script src="shared/lib.js"></script>
+<script src="shared/lib-gen.js"></script>
+<script>
+VZ.mountTopnav('#topnav', '10 · 노이즈 걷어내기');
+VZ.setupStepper();
+const G=VZ.GEN;
+
+// ===== STEP 0: one step =====
+(function(){
+  let t=70;
+  const play=document.getElementById('play0');
+  play.innerHTML=`<label>현재 노이즈 단계 <input type="range" id="t" min="20" max="100" value="70"></label>`;
+  function render(){ const W=460,H=190; const lvl=t/100; const lvl2=VZ.clamp(lvl-0.18,0,1); let s='';
+    s+=G.glyphNoisy(110,90,32,0.4,0.6,lvl,5,{stroke:'var(--dead)',label:'입력 (단계 t)'});
+    s+=G.arrow(150,90,300,90,{color:G.C.v,lw:2});
+    s+=`<text x="225" y="78" text-anchor="middle" font-size="10" font-family="monospace" font-weight="700" fill="${G.C.v}">한 스텝 되돌리기</text>`;
+    s+=G.glyphNoisy(350,90,32,0.4,0.6,lvl2,5,{stroke:'var(--good)',label:'출력 (단계 t−1)'});
+    document.getElementById('s0').innerHTML=G.svg(W,H,s,'한 스텝');
+    document.getElementById('lab0').innerHTML=`입력보다 출력이 <b>살짝</b> 또렷하죠 — 딱 한 걸음이에요. 깨끗해지려면 이 스텝을 t번 반복해야 해요(→12장).`;
+  }
+  document.getElementById('t').oninput=e=>{t=+e.target.value;render();};
+  render();
+})();
+
+// ===== STEP 1: predict noise == predict clean =====
+(function(){
+  let view=0;
+  const play=document.getElementById('play1');
+  play.innerHTML=`<button class="btn" id="v0">노이즈를 맞힌다</button><button class="btn" id="v1">깨끗한 쪽을 맞힌다</button>`;
+  function render(){ const W=460,H=200; let s='';
+    // noisy = clean + noise  (visual equation)
+    s+=G.glyphNoisy(80,90,28,0.4,0.6,0.7,5,{stroke:'var(--dead)',label:'노이즈 낀'});
+    s+=`<text x="148" y="95" text-anchor="middle" font-size="16" font-family="monospace" fill="${G.C.muted}">=</text>`;
+    s+=G.glyph(215,90,28,0.4,0.6,{stroke:'var(--good)',lw:1.2,label:'깨끗한'});
+    s+=`<text x="283" y="95" text-anchor="middle" font-size="16" font-family="monospace" fill="${G.C.muted}">+</text>`;
+    // noise box
+    s+=G.glyphNoisy(350,90,28,0.5,0.5,1,9,{stroke:'var(--v)',label:'노이즈'});
+    if(view===0){ s+=`<circle cx="350" cy="90" r="34" fill="none" stroke="${G.C.hot}" stroke-width="2.4"/>`; }
+    else { s+=`<circle cx="215" cy="90" r="34" fill="none" stroke="${G.C.hot}" stroke-width="2.4"/>`; }
+    document.getElementById('s1').innerHTML=G.svg(W,H,s,'등가');
+    document.getElementById('v0').className='btn'+(view===0?' active':'');
+    document.getElementById('v1').className='btn'+(view===1?' active':'');
+    document.getElementById('lab1').innerHTML= view===0
+      ? `<b style="color:${G.C.hot}">노이즈를 맞히면</b> — 노이즈 낀 그림에서 빼서 깨끗한 쪽을 얻어요.`
+      : `<b style="color:${G.C.hot}">깨끗한 쪽을 맞히면</b> — 노이즈 낀 그림에서 빼서 노이즈를 얻어요. <b>완전히 같은 일</b>이죠(주황 동그라미만 옮겨다님).`;
+  }
+  document.getElementById('v0').onclick=()=>{view=0;render();};
+  document.getElementById('v1').onclick=()=>{view=1;render();};
+  render();
+})();
+
+// ===== STEP 2: learned guess, pull to family =====
+(function(){
+  let step=0; const MAX=4;
+  const play=document.getElementById('play2');
+  play.innerHTML=`<button class="btn" id="prev2">◀</button><button class="btn" id="next2">되돌리기 스텝 ▶</button><button class="btn" id="rs2">처음</button>`;
+  const R=G.rng(21);
+  const noisy=[]; for(let i=0;i<10;i++) noisy.push({x:0.1+R()*0.8, y:0.1+R()*0.8});
+  // data "family" = a ring/cluster the points get pulled toward
+  const fam=[{x:0.35,y:0.6},{x:0.6,y:0.4},{x:0.5,y:0.7}];
+  function nearestFam(p){ let best=fam[0],d=9; fam.forEach(f=>{const dd=Math.hypot(p.x-f.x,p.y-f.y); if(dd<d){d=dd;best=f;}}); return best; }
+  function render(){ const W=460,H=230; const P=G.plane({x:60,y:18,w:340,h:200}); let s=P.frame();
+    s+=`<text x="230" y="12" text-anchor="middle" font-size="10" font-family="monospace" fill="${G.C.muted}">노이즈 점들이 데이터 부류(초록)로 끌려감</text>`;
+    fam.forEach(f=>s+=G.density(P.px(f.x),P.py(f.y),26,24,{color:'var(--good)'}));
+    const t=step/MAX;
+    noisy.forEach(p=>{ const f=nearestFam(p); const x=p.x+(f.x-p.x)*t, y=p.y+(f.y-p.y)*t;
+      s+=`<circle cx="${P.px(x).toFixed(1)}" cy="${P.py(y).toFixed(1)}" r="4" fill="${G.C.v}" stroke="var(--bg)" stroke-width="0.8"/>`; });
+    document.getElementById('s2').innerHTML=G.svg(W,H,s,'부류로');
+    document.getElementById('lab2').innerHTML= step===0
+      ? `시작 — 보라 노이즈 점들이 사방에 흩어져 있어요. ▶로 되돌리기 스텝을 밟아보세요.`
+      : step>=MAX ? `점들이 자기 옛 원본이 아니라 <b>가까운 데이터 부류(초록)</b>로 모였어요. 정확 복원이 아니라 "그럴듯한 곳으로 끌어당기기" — 그래서 새 생성이 가능해요.`
+      : `스텝 ${step} — 점들이 가장 가까운 데이터 부류 쪽으로 조금씩 이동해요.`;
+  }
+  document.getElementById('next2').onclick=()=>{step=Math.min(MAX,step+1);render();};
+  document.getElementById('prev2').onclick=()=>{step=Math.max(0,step-1);render();};
+  document.getElementById('rs2').onclick=()=>{step=0;render();};
+  render();
+})();
+
+// ===== STEP 3 =====
+(function(){ const W=460,H=120;
+  let s=`<text x="${W/2}" y="24" text-anchor="middle" font-size="12.5" font-family="monospace" font-weight="700" fill="${G.C.v}">한 스텝씩, 배운 근사로</text>`;
+  const rows=[['한 스텝','살짝만 — 완성 아님(반복→12)','var(--v)'],['등가','노이즈 맞히기=깨끗 맞히기','var(--hot)'],['근사','원본 아닌 부류로 끌어당김','var(--good)']];
+  rows.forEach((r,idx)=>{ const y=38+idx*26; s+=`<rect x="20" y="${y}" width="${W-40}" height="22" rx="6" fill="var(--panel)" stroke="${r[2]}" stroke-width="1.1"/><text x="34" y="${y+15}" fill="${r[2]}" font-size="11" font-family="monospace" font-weight="700">${r[0]}</text><text x="${W-30}" y="${y+15}" fill="var(--ink)" font-size="9.5" font-family="monospace" text-anchor="end">${r[1]}</text>`; });
+  document.getElementById('s3').innerHTML=G.svg(W,H,s,'정리');
+  document.getElementById('lab3').innerHTML='이 되돌리기를 어떻게 배우나 — 다음, 회귀로 노이즈 맞히기.';
+})();
+</script>
+</body>
+</html>

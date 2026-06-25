@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>05 · AE의 한계 → VAE — 생성모델, 눈으로 보기</title>
+<link rel="stylesheet" href="shared/theme.css">
+<link rel="icon" type="image/svg+xml" href="shared/favicon.svg">
+<style>
+  .big{font-family:'JetBrains Mono',monospace; font-size:13.5px; color:var(--ink); margin:12px 0 6px; padding:14px 16px; border-radius:14px; background:var(--panel-2); border:1px solid var(--line); line-height:1.6;}
+  .big:empty{display:none;}
+  .ctl{display:flex; align-items:center; gap:12px; margin:10px 0; flex-wrap:wrap;}
+  .ctl label{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted)}
+  svg{display:block; width:100%;}
+  code{font-family:'JetBrains Mono',monospace;background:var(--panel-2);padding:1px 5px;border-radius:5px;font-size:.92em}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topnav" id="topnav"></div>
+
+  <header>
+    <div class="tag" style="color:var(--v)">PART B · 잠재변수 모델 — VAE (기둥) — CH 05</div>
+    <h1>AE의 한계 → VAE</h1>
+    <p class="intro">오토인코더는 복원은 잘 했지만, <b>새로 생성</b>하려고 잠재공간의 빈자리를 뽑으면 쓰레기가 나와요 — 점들이 띄엄띄엄 섬처럼 흩어져 있고 사이엔 아무 의미가 없거든요. <b>VAE(변분 오토인코더)</b>의 해법은 두 가지예요: ① 각 입력을 <b>한 점이 아니라 작은 분포(구름)</b>로 인코딩하고, ② 그 구름들을 모두 <b>가운데 표준 정규분포</b> 쪽으로 모아요. 그러면 잠재공간에 빈틈이 없어져, <b>아무 데서나 뽑아도</b> 그럴듯한 게 나와요.</p>
+  </header>
+
+  <nav class="stepper" id="stepper">
+    <button data-s="0" class="active">00 · 빈자리의 고통</button>
+    <button data-s="1">01 · 점 대신 분포로</button>
+    <button data-s="2">02 · 가운데로 모으기</button>
+    <button data-s="3">03 · 정리</button>
+  </nav>
+
+  <!-- STEP 0 -->
+  <section class="panel show" data-panel="0">
+    <span class="kicker" style="color:var(--v)">Step 00 — The Pain of the Gaps</span>
+    <h2>빈자리를 뽑으면 쓰레기가 나온다</h2>
+    <p class="lead">평범한 AE의 잠재공간이에요 — 데이터가 <b>섬처럼</b> 뭉쳐 있고 사이는 텅 비었죠. 좌표를 옮겨 보세요. 섬 위(데이터 근처)에선 멀쩡한 글리프가, <b>섬 사이 빈자리</b>에선 노이즈 같은 쓰레기가 디코딩돼요. 그래서 AE는 "아무 좌표나 뽑아 새로 만들기"엔 못 써요.</p>
+    <div class="ctl" id="play0"></div>
+    <div class="scene" id="s0"></div>
+    <p class="big" id="lab0"></p>
+    <p class="note" style="margin-top:6px">→ AE 잠재공간엔 빈 구멍이 많아요. 거길 뽑으면 쓰레기.</p>
+  </section>
+
+  <!-- STEP 1 -->
+  <section class="panel" data-panel="1">
+    <span class="kicker" style="color:var(--hot)">Step 01 — A Distribution, Not a Point</span>
+    <h2>한 점 말고, 작은 구름으로</h2>
+    <p class="lead">VAE의 첫 수 — 인코더가 입력을 <b>한 점이 아니라 작은 구름</b>(중심 μ, 퍼짐 σ)으로 보내요. 훈련할 때 그 구름 <b>안 어디서 뽑아도</b> 같은 입력으로 복원되게 하니, 구름들이 서로 <b>겹치며 빈틈을 메워요</b>. 토글로 점(AE) vs 구름(VAE)을 비교해 보세요.</p>
+    <div class="ctl" id="play1"></div>
+    <div class="scene" id="s1"></div>
+    <p class="big" id="lab1"></p>
+    <p class="note" style="margin-top:6px">→ 입력→구름(μ,σ). 겹치는 구름들이 잠재공간의 틈을 메워요.</p>
+  </section>
+
+  <!-- STEP 2 -->
+  <section class="panel" data-panel="2">
+    <span class="kicker" style="color:var(--q)">Step 02 — Pull Everything to the Center</span>
+    <h2>모두 가운데 정규분포로</h2>
+    <p class="lead">VAE의 둘째 수 — 구름들을 모두 <b>가운데의 표준 정규분포</b> 쪽으로 살살 당겨요(흩어져 멀리 도망가지 못하게). 그러면 잠재공간이 가운데 한 덩어리로 채워지고, <b>그냥 정규분포에서 뽑은 좌표</b>를 디코더에 넣어도 그럴듯한 게 나와요 — 드디어 진짜 생성! 당기는 세기를 조절해 보세요.</p>
+    <div class="ctl" id="play2"></div>
+    <div class="scene" id="s2"></div>
+    <p class="big" id="lab2"></p>
+    <p class="note" style="margin-top:6px">→ 모든 구름을 가운데로 → 빈틈 없는 공간 → 아무 데서나 뽑기 가능.</p>
+  </section>
+
+  <!-- STEP 3 -->
+  <section class="panel" data-panel="3">
+    <span class="kicker" style="color:var(--good)">Step 03 — Takeaways</span>
+    <h2>정리</h2>
+    <p class="lead">VAE = ① 점 대신 분포로 인코딩 + ② 모두 가운데 정규분포로 모으기. 그 결과 빈틈 없는 잠재공간이 생겨, 정규분포에서 뽑은 아무 좌표나 그럴듯한 생성물이 돼요. 그런데 — "분포에서 뽑는다"는 무작위 동작을 어떻게 <b>학습</b>시킬까요? 무작위가 끼면 손잡이를 어느 쪽으로 돌릴지 알 수가 없는데. 그 영리한 트릭이 다음 챕터예요.</p>
+    <div class="scene" id="s3"></div>
+    <p class="big" id="lab3"></p>
+    <p class="note" style="margin-top:14px">→ 다음 → <a href="06-reparam.html" style="color:var(--v);font-weight:700">CH 06 · 주사위를 밖으로</a></p>
+  </section>
+
+  <p class="foot">// 코드 없는 직관 입문 · <a href="index.html">목차</a></p>
+</div>
+
+<script src="shared/lib.js"></script>
+<script src="shared/lib-gen.js"></script>
+<script>
+VZ.mountTopnav('#topnav', '05 · AE의 한계 → VAE');
+VZ.setupStepper();
+const G=VZ.GEN;
+// AE islands: a few cluster centers; valid only near them
+const ISL=[{x:0.2,y:0.75},{x:0.78,y:0.7},{x:0.35,y:0.28},{x:0.7,y:0.25}];
+function nearIsland(x,y){ let m=9; ISL.forEach(c=>{const d=Math.hypot(x-c.x,y-c.y); if(d<m)m=d;}); return m; }
+
+// ===== STEP 0: pain of gaps =====
+(function(){
+  let px=0.5,py=0.5;
+  const play=document.getElementById('play0');
+  play.innerHTML=`<label>좌표 z₁ <input type="range" id="px" min="2" max="98" value="50"></label>`+
+                 `<label>z₂ <input type="range" id="py" min="2" max="98" value="50"></label>`;
+  function render(){ const W=460,H=240; const P=G.plane({x:60,y:18,w:300,h:200}); let s=P.frame();
+    s+=`<text x="210" y="12" text-anchor="middle" font-size="10" font-family="monospace" fill="${G.C.muted}">AE 잠재공간 — 섬과 빈 바다</text>`;
+    ISL.forEach(c=>{ s+=G.density(P.px(c.x),P.py(c.y),34,30,{color:'var(--q)'}); });
+    const d=nearIsland(px,py); const onIsland=d<0.16;
+    s+=`<circle cx="${P.px(px).toFixed(1)}" cy="${P.py(py).toFixed(1)}" r="6" fill="none" stroke="${onIsland?G.C.good:G.C.dead}" stroke-width="2.4"/>`;
+    // decoded preview
+    if(onIsland) s+=G.glyph(410,80,30,px,py,{stroke:'var(--good)',lw:1.6,label:'멀쩡'});
+    else s+=G.glyphNoisy(410,80,30,px,py,0.92,3,{stroke:'var(--dead)',label:'쓰레기'});
+    document.getElementById('s0').innerHTML=G.svg(W,H,s,'빈자리');
+    document.getElementById('lab0').innerHTML= onIsland
+      ? `<b style="color:${G.C.good}">섬 위</b> — 데이터 근처라 멀쩡한 글리프가 나와요.`
+      : `<b style="color:${G.C.dead}">빈 바다</b> — 섬 사이엔 의미가 없어, 디코더가 노이즈 같은 쓰레기를 뱉어요. AE로 "새로 생성"이 안 되는 이유.`;
+  }
+  document.getElementById('px').oninput=e=>{px=e.target.value/100;render();};
+  document.getElementById('py').oninput=e=>{py=e.target.value/100;render();};
+  render();
+})();
+
+// ===== STEP 1: point vs cloud =====
+(function(){
+  let mode=0;
+  const play=document.getElementById('play1');
+  play.innerHTML=`<button class="btn" id="m0">AE — 점</button><button class="btn" id="m1">VAE — 구름</button>`;
+  function render(){ const W=460,H=240; const P=G.plane({x:70,y:18,w:330,h:200}); let s=P.frame();
+    s+=`<text x="235" y="12" text-anchor="middle" font-size="10" font-family="monospace" fill="${G.C.muted}">${mode===0?'AE — 입력=한 점(사이는 빈틈)':'VAE — 입력=구름(겹쳐 메움)'}</text>`;
+    ISL.forEach(c=>{
+      if(mode===0){ s+=`<circle cx="${P.px(c.x).toFixed(1)}" cy="${P.py(c.y).toFixed(1)}" r="5" fill="${G.C.q}"/>`; }
+      else { s+=G.density(P.px(c.x),P.py(c.y),46,42,{color:'var(--v)'}); s+=`<circle cx="${P.px(c.x).toFixed(1)}" cy="${P.py(c.y).toFixed(1)}" r="3" fill="${G.C.v}"/>`; }
+    });
+    document.getElementById('s1').innerHTML=G.svg(W,H,s,'점vs구름');
+    document.getElementById('m0').className='btn'+(mode===0?' active':'');
+    document.getElementById('m1').className='btn'+(mode===1?' active':'');
+    document.getElementById('lab1').innerHTML= mode===0
+      ? `<b style="color:${G.C.q}">AE</b> — 입력 하나당 점 하나. 점들 사이는 텅 비어 빈틈투성이예요.`
+      : `<b style="color:${G.C.v}">VAE</b> — 입력 하나가 <b>구름</b>(μ 중심, σ 퍼짐). 구름들이 <b>겹치며</b> 사이 공간을 메워요. 이제 사이를 뽑아도 의미가 있죠.`;
+  }
+  document.getElementById('m0').onclick=()=>{mode=0;render();};
+  document.getElementById('m1').onclick=()=>{mode=1;render();};
+  render();
+})();
+
+// ===== STEP 2: pull to center (prior) =====
+(function(){
+  let pull=0.0;
+  const play=document.getElementById('play2');
+  play.innerHTML=`<label>가운데로 당기는 세기 <input type="range" id="pl" min="0" max="100" value="0"></label>`;
+  function render(){ const W=460,H=240; const P=G.plane({x:70,y:18,w:330,h:200}); let s=P.frame();
+    // prior region (standard normal) outline
+    s+=`<circle cx="${P.px(0.5).toFixed(1)}" cy="${P.py(0.5).toFixed(1)}" r="56" fill="none" stroke="${G.C.good}" stroke-width="1.2" stroke-dasharray="4 3"/>`;
+    s+=`<text x="${P.px(0.5)}" y="${P.py(0.5)-62}" text-anchor="middle" font-size="8.5" font-family="monospace" fill="${G.C.good}">표준 정규분포 (뽑는 곳)</text>`;
+    ISL.forEach(c=>{ const cx=c.x+(0.5-c.x)*pull, cy=c.y+(0.5-c.y)*pull;
+      s+=G.density(P.px(cx),P.py(cy),40,36,{color:'var(--v)'}); });
+    document.getElementById('s2').innerHTML=G.svg(W,H,s,'당기기');
+    document.getElementById('lab2').innerHTML= pull<0.2
+      ? `당김 약함 — 구름들이 흩어져 초록 원(정규분포) 밖에도 있어요. 정규분포에서 뽑으면 빗나간 곳이 많죠.`
+      : pull>0.8 ? `<b style="color:${G.C.dead}">너무 셈</b> — 다 가운데로 뭉쳐 서로 구분이 안 돼요(복원이 흐려짐). 적당히 당겨야 해요.`
+      : `<b style="color:${G.C.good}">적당</b> — 구름들이 초록 원 안에 골고루. 이제 <b>표준 정규분포에서 아무 좌표나 뽑아</b> 디코더에 넣으면 그럴듯한 게 나와요. 진짜 생성!`;
+  }
+  document.getElementById('pl').oninput=e=>{pull=e.target.value/100;render();};
+  render();
+})();
+
+// ===== STEP 3 =====
+(function(){ const W=460,H=120;
+  let s=`<text x="${W/2}" y="24" text-anchor="middle" font-size="12.5" font-family="monospace" font-weight="700" fill="${G.C.v}">빈틈 없는 잠재공간</text>`;
+  const rows=[['수1','점 대신 분포(구름)로 인코딩','var(--v)'],['수2','모두 가운데 정규분포로','var(--q)'],['보상','아무 데서나 뽑아 생성','var(--good)']];
+  rows.forEach((r,idx)=>{ const y=38+idx*26; s+=`<rect x="20" y="${y}" width="${W-40}" height="22" rx="6" fill="var(--panel)" stroke="${r[2]}" stroke-width="1.1"/><text x="34" y="${y+15}" fill="${r[2]}" font-size="11" font-family="monospace" font-weight="700">${r[0]}</text><text x="${W-30}" y="${y+15}" fill="var(--ink)" font-size="9.5" font-family="monospace" text-anchor="end">${r[1]}</text>`; });
+  document.getElementById('s3').innerHTML=G.svg(W,H,s,'정리');
+  document.getElementById('lab3').innerHTML='무작위 뽑기를 어떻게 학습시키나 — 다음, 주사위를 밖으로(reparam).';
+})();
+</script>
+</body>
+</html>

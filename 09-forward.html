@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>09 · 노이즈로 무너뜨리기 — 생성모델, 눈으로 보기</title>
+<link rel="stylesheet" href="shared/theme.css">
+<link rel="icon" type="image/svg+xml" href="shared/favicon.svg">
+<style>
+  .big{font-family:'JetBrains Mono',monospace; font-size:13.5px; color:var(--ink); margin:12px 0 6px; padding:14px 16px; border-radius:14px; background:var(--panel-2); border:1px solid var(--line); line-height:1.6;}
+  .big:empty{display:none;}
+  .ctl{display:flex; align-items:center; gap:12px; margin:10px 0; flex-wrap:wrap;}
+  .ctl label{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted)}
+  svg{display:block; width:100%;}
+  .nbox{margin:12px 0;padding:12px 14px;border-radius:12px;background:rgba(55,189,248,.08);border:1px solid var(--q);font-size:13px;line-height:1.6;color:var(--ink)}
+  .nbox b{color:var(--q)}
+  code{font-family:'JetBrains Mono',monospace;background:var(--panel-2);padding:1px 5px;border-radius:5px;font-size:.92em}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topnav" id="topnav"></div>
+
+  <header>
+    <div class="tag" style="color:var(--v)">PART D · 확산모델 — Diffusion (기둥) — CH 09</div>
+    <h1>노이즈로 무너뜨리기</h1>
+    <p class="intro">확산모델의 출발은 엉뚱할 만큼 단순해요 — 멀쩡한 생성물에 <b>노이즈를 아주 조금씩</b> 반복해 더해요. 한 번에 하나씩, 수십~수백 번. 그러면 또렷하던 그림이 점점 지직거리다가, 끝엔 <b>완전한 모래폭풍(순수 노이즈)</b>이 돼요. 이 망가뜨리는 방향(forward)이 바로 다음 챕터에서 배울 "되돌리기"의 연습 문제를 만들어줘요. 그리고 중요한 점 — 이 방향엔 <b>배울 게 하나도 없어요</b>. 그냥 정해진 레시피예요.</p>
+  </header>
+
+  <nav class="stepper" id="stepper">
+    <button data-s="0" class="active">00 · 조금씩 더하기</button>
+    <button data-s="1">01 · 끝은 순수 노이즈</button>
+    <button data-s="2">02 · 이 방향엔 학습 없음</button>
+    <button data-s="3">03 · 정리</button>
+  </nav>
+
+  <!-- STEP 0 -->
+  <section class="panel show" data-panel="0">
+    <span class="kicker" style="color:var(--v)">Step 00 — Add a Little Each Step</span>
+    <h2>한 스텝마다 노이즈 조금</h2>
+    <p class="lead">슬라이더(시간 t)를 끌어 보세요. t=0은 깨끗한 원본, t가 커질수록 노이즈가 조금씩 쌓여요. 각 스텝은 "직전 그림에 약간의 잡음을 섞기"일 뿐 — 작고 단순한 동작이에요. 하지만 이걸 충분히 반복하면 그림이 알아볼 수 없게 무너지죠.</p>
+    <div class="ctl" id="play0"></div>
+    <div class="scene" id="s0"></div>
+    <p class="big" id="lab0"></p>
+    <p class="note" style="margin-top:6px">→ 각 스텝 = 약간의 노이즈 추가. 작은 동작의 반복이 그림을 무너뜨려요.</p>
+  </section>
+
+  <!-- STEP 1 -->
+  <section class="panel" data-panel="1">
+    <span class="kicker" style="color:var(--hot)">Step 01 — The End Is Pure Noise</span>
+    <h2>무엇이든 같은 모래폭풍으로</h2>
+    <p class="lead">충분히 더하면 — <b>어떤 그림이든</b> 결국 <b>똑같이 특징 없는</b> 순수 노이즈처럼 보여요(각자 다른 무작위지만, 더는 무엇이었는지 알 수 없죠). 출발이 달라도 "특징을 다 잃었다"는 점에선 같아지죠. 여러 출발 그림이 단계를 거치며 전부 모래폭풍으로 수렴하는 걸 보세요. 이 "공통의 끝"이 다음 단계의 열쇠예요 — <b>아무 노이즈에서나 시작</b>해 거꾸로 돌릴 수 있으니까.</p>
+    <div class="ctl" id="play1"></div>
+    <div class="scene" id="s1"></div>
+    <p class="big" id="lab1"></p>
+    <p class="note" style="margin-top:6px">→ 출발이 뭐든 끝은 같은 순수 노이즈. 그래서 노이즈에서 거꾸로 시작 가능.</p>
+  </section>
+
+  <!-- STEP 2 -->
+  <section class="panel" data-panel="2">
+    <span class="kicker" style="color:var(--q)">Step 02 — No Learning in This Direction</span>
+    <h2>망가뜨리는 데는 머리가 안 든다</h2>
+    <p class="lead">꼭 기억할 것 — 이 <b>무너뜨리는 방향엔 학습이 전혀 없어요</b>. "노이즈를 얼마나 섞을지"는 사람이 미리 정한 <b>고정 레시피</b>(스케줄)일 뿐, 모델이 배우는 게 아니에요. 망가뜨리긴 쉽잖아요. <b>모든 학습은 그 반대 — 노이즈를 걷어내는 방향</b>에 있어요(다음 챕터). 토글로 두 방향의 역할을 비교하세요.</p>
+    <div class="ctl" id="play2"></div>
+    <div class="scene" id="s2"></div>
+    <p class="big" id="lab2"></p>
+    <div class="nbox">🔑 <b>핵심 비대칭</b> — forward(무너뜨리기)=고정 레시피, 학습 0. reverse(되돌리기)=모델이 배우는 전부. 더하기는 누구나 하지만, 걷어내기는 똑똑해야 하죠. 확산모델의 모든 마법은 <b>반대 방향</b>에 있어요.</div>
+    <p class="note" style="margin-top:6px">→ forward는 고정·무학습. 학습은 전부 reverse에(→10·11).</p>
+  </section>
+
+  <!-- STEP 3 -->
+  <section class="panel" data-panel="3">
+    <span class="kicker" style="color:var(--good)">Step 03 — Takeaways</span>
+    <h2>정리</h2>
+    <p class="lead">forward = 노이즈를 조금씩 더해 어떤 그림이든 순수 노이즈로 무너뜨리는 <b>고정 레시피</b>. 학습은 없어요. 그런데 이 망가뜨리기가 왜 생성에 쓸모 있을까요? 핵심은 — 각 단계가 "조금만" 망가뜨리니, 그 <b>한 스텝을 되돌리는 건 충분히 만만한 문제</b>라는 거예요. 그 되돌리기를 배우는 게 다음 챕터예요.</p>
+    <div class="scene" id="s3"></div>
+    <p class="big" id="lab3"></p>
+    <p class="note" style="margin-top:14px">→ 다음 → <a href="10-reverse.html" style="color:var(--v);font-weight:700">CH 10 · 노이즈 걷어내기</a></p>
+  </section>
+
+  <p class="foot">// 코드 없는 직관 입문 · <a href="index.html">목차</a></p>
+</div>
+
+<script src="shared/lib.js"></script>
+<script src="shared/lib-gen.js"></script>
+<script>
+VZ.mountTopnav('#topnav', '09 · 노이즈로 무너뜨리기');
+VZ.setupStepper();
+const G=VZ.GEN;
+
+// ===== STEP 0: slider over t =====
+(function(){
+  let t=0;
+  const play=document.getElementById('play0');
+  play.innerHTML=`<label>시간 t (노이즈 단계) <input type="range" id="t" min="0" max="100" value="0"></label>`;
+  function render(){ const W=460,H=190; let s='';
+    s+=G.glyphNoisy(230,90,46,0.35,0.65,t/100,5,{stroke:'var(--v)',lw:1.6});
+    s+=`<text x="230" y="170" text-anchor="middle" font-size="10" font-family="monospace" fill="${G.C.muted}">t = ${t} / 100</text>`;
+    document.getElementById('s0').innerHTML=G.svg(W,H,s,'forward');
+    document.getElementById('lab0').innerHTML= t<10 ? `t=${t} — 거의 원본. 깨끗한 글리프예요.`
+      : t<70 ? `t=${t} — 노이즈가 쌓여 점점 지직거려요. 아직 형체는 보이죠.`
+      : `t=${t} — 거의 알아볼 수 없어요. 조금만 더 가면 순수 노이즈.`;
+  }
+  document.getElementById('t').oninput=e=>{t=+e.target.value;render();};
+  render();
+})();
+
+// ===== STEP 1: many starts -> same noise =====
+(function(){
+  let step=0; const MAX=5;
+  const play=document.getElementById('play1');
+  play.innerHTML=`<button class="btn" id="prev1">◀</button><button class="btn" id="next1">단계 ▶</button><button class="btn" id="rs1">처음</button><span class="note" id="cnt1" style="margin-left:8px"></span>`;
+  const starts=[{z1:0.15,z2:0.8},{z1:0.5,z2:0.4},{z1:0.85,z2:0.65}];
+  function render(){ const W=460,H=170; const lvl=step/MAX; let s='';
+    starts.forEach((st,i)=>{ const cx=110+i*130; s+=G.glyphNoisy(cx,80,30,st.z1,st.z2,lvl,i*13+3,{stroke:'var(--v)'}); });
+    s+=`<text x="230" y="150" text-anchor="middle" font-size="10" font-family="monospace" fill="${G.C.muted}">서로 다른 출발 — 단계 ${step}/${MAX}</text>`;
+    document.getElementById('s1').innerHTML=G.svg(W,H,s,'수렴');
+    document.getElementById('cnt1').textContent=`${step}/${MAX}`;
+    document.getElementById('lab1').innerHTML= step===0
+      ? `세 출발 글리프가 서로 달라요. ▶로 노이즈를 더해보세요.`
+      : step>=MAX ? `셋 다 특징을 잃고 <b>똑같이 무의미한 노이즈</b>처럼 보여요(자세히 보면 각자 다른 무작위). "무엇이었는지 알 수 없다"는 점이 같아, 아무 노이즈에서나 거꾸로 출발할 수 있어요.`
+      : `단계 ${step} — 셋이 점점 비슷한 모래폭풍으로 수렴해요.`;
+  }
+  document.getElementById('next1').onclick=()=>{step=Math.min(MAX,step+1);render();};
+  document.getElementById('prev1').onclick=()=>{step=Math.max(0,step-1);render();};
+  document.getElementById('rs1').onclick=()=>{step=0;render();};
+  render();
+})();
+
+// ===== STEP 2: no learning forward =====
+(function(){
+  let dir=0; // 0 forward, 1 reverse
+  const play=document.getElementById('play2');
+  play.innerHTML=`<button class="btn" id="f2">forward (무너뜨리기)</button><button class="btn" id="r2">reverse (되돌리기)</button>`;
+  function render(){ const W=460,H=180; let s='';
+    s+=G.glyph(80,90,28,0.4,0.6,{stroke:'var(--good)',lw:1.2,label:'그림'});
+    s+=G.glyphNoisy(380,90,28,0.4,0.6,0.95,7,{stroke:'var(--dead)',label:'노이즈'});
+    if(dir===0){
+      s+=G.arrow(112,90,348,90,{color:G.C.q,lw:2});
+      s+=`<text x="230" y="78" text-anchor="middle" font-size="11" font-family="monospace" font-weight="700" fill="${G.C.q}">forward — 고정 레시피</text>`;
+      s+=`<text x="230" y="110" text-anchor="middle" font-size="9.5" font-family="monospace" fill="${G.C.faint}">학습 0 · 그냥 노이즈 더하기</text>`;
+      document.getElementById('lab2').innerHTML=`<b style="color:${G.C.q}">forward</b> — 정해진 양만큼 노이즈를 더할 뿐. 모델도, 학습도 없어요. 누구나 할 수 있는 쉬운 방향.`;
+    } else {
+      s+=G.arrow(348,90,112,90,{color:G.C.v,lw:2});
+      s+=`<text x="230" y="78" text-anchor="middle" font-size="11" font-family="monospace" font-weight="700" fill="${G.C.v}">reverse — 모델이 배움</text>`;
+      s+=`<text x="230" y="110" text-anchor="middle" font-size="9.5" font-family="monospace" fill="${G.C.faint}">노이즈를 걷어내는 똑똑함이 필요</text>`;
+      document.getElementById('lab2').innerHTML=`<b style="color:${G.C.v}">reverse</b> — 모래폭풍에서 그림을 복원하는 어려운 방향. 확산모델의 <b>모든 학습</b>이 여기 있어요(→10·11).`;
+    }
+    document.getElementById('s2').innerHTML=G.svg(W,H,s,'두 방향');
+    document.getElementById('f2').className='btn'+(dir===0?' active':'');
+    document.getElementById('r2').className='btn'+(dir===1?' active':'');
+  }
+  document.getElementById('f2').onclick=()=>{dir=0;render();};
+  document.getElementById('r2').onclick=()=>{dir=1;render();};
+  render();
+})();
+
+// ===== STEP 3 =====
+(function(){ const W=460,H=120;
+  let s=`<text x="${W/2}" y="24" text-anchor="middle" font-size="12.5" font-family="monospace" font-weight="700" fill="${G.C.v}">조금씩 더해 무너뜨리기</text>`;
+  const rows=[['forward','노이즈 조금씩 추가 → 순수 노이즈','var(--v)'],['공통 끝','특징 잃고 같은 모양의 노이즈로','var(--hot)'],['학습','이 방향엔 0 — 전부 reverse에','var(--q)']];
+  rows.forEach((r,idx)=>{ const y=38+idx*26; s+=`<rect x="20" y="${y}" width="${W-40}" height="22" rx="6" fill="var(--panel)" stroke="${r[2]}" stroke-width="1.1"/><text x="34" y="${y+15}" fill="${r[2]}" font-size="11" font-family="monospace" font-weight="700">${r[0]}</text><text x="${W-30}" y="${y+15}" fill="var(--ink)" font-size="9.5" font-family="monospace" text-anchor="end">${r[1]}</text>`; });
+  document.getElementById('s3').innerHTML=G.svg(W,H,s,'정리');
+  document.getElementById('lab3').innerHTML='한 스텝 되돌리기는 만만한 문제 — 다음, 노이즈 걷어내기.';
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="14" fill="#0b0e14"/>
+  <!-- 노이즈 (왼쪽 위) → 생성물로 -->
+  <rect x="9" y="9" width="5" height="5" fill="#6b7280" opacity="0.6"/>
+  <rect x="16" y="11" width="5" height="5" fill="#9ca3af" opacity="0.5"/>
+  <rect x="10" y="17" width="5" height="5" fill="#d1d5db" opacity="0.45"/>
+  <!-- 생성된 글리프(보라 얼굴) -->
+  <ellipse cx="36" cy="36" rx="18" ry="16" fill="#c084fc" opacity="0.92"/>
+  <circle cx="30" cy="32" r="3.2" fill="#0b0e14"/>
+  <circle cx="43" cy="32" r="3.2" fill="#0b0e14"/>
+  <path d="M28,42 Q36,49 45,42" fill="none" stroke="#0b0e14" stroke-width="2.4" stroke-linecap="round"/>
+</svg>

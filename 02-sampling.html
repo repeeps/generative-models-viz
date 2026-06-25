@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>02 · 분포에서 표본 뽑기 — 생성모델, 눈으로 보기</title>
+<link rel="stylesheet" href="shared/theme.css">
+<link rel="icon" type="image/svg+xml" href="shared/favicon.svg">
+<style>
+  .big{font-family:'JetBrains Mono',monospace; font-size:13.5px; color:var(--ink); margin:12px 0 6px; padding:14px 16px; border-radius:14px; background:var(--panel-2); border:1px solid var(--line); line-height:1.6;}
+  .big:empty{display:none;}
+  .ctl{display:flex; align-items:center; gap:12px; margin:10px 0; flex-wrap:wrap;}
+  .ctl label{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted)}
+  svg{display:block; width:100%;}
+  .nbox{margin:12px 0;padding:12px 14px;border-radius:12px;background:rgba(248,113,113,.08);border:1px solid var(--dead);font-size:13px;line-height:1.6;color:var(--ink)}
+  .nbox b{color:var(--dead)}
+  code{font-family:'JetBrains Mono',monospace;background:var(--panel-2);padding:1px 5px;border-radius:5px;font-size:.92em}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topnav" id="topnav"></div>
+
+  <header>
+    <div class="tag" style="color:var(--q)">PART A · 생성이란 무엇인가 — CH 02</div>
+    <h1>분포에서 표본 뽑기</h1>
+    <p class="intro">"분포를 배운다"는 게 손에 잡히게 — <b>분포</b>는 "어떤 값이 얼마나 자주 나오는지"의 그래프예요. 높은 봉우리는 흔한 값, 낮은 골은 드문 값. 거기서 <b>표본을 뽑는다</b>는 건, 봉우리는 자주·골은 드물게 나오도록 <b>주사위를 굴리는</b> 거예요. 충분히 뽑으면 뽑힌 것들의 모양이 원래 분포를 닮아가죠. 이게 생성의 가장 작은 단위예요.</p>
+  </header>
+
+  <nav class="stepper" id="stepper">
+    <button data-s="0" class="active">00 · 분포의 모양</button>
+    <button data-s="1">01 · 뽑기 = 주사위</button>
+    <button data-s="2">02 · '새롭다'란</button>
+    <button data-s="3">03 · 정리</button>
+  </nav>
+
+  <!-- STEP 0 -->
+  <section class="panel show" data-panel="0">
+    <span class="kicker" style="color:var(--q)">Step 00 — The Shape of a Distribution</span>
+    <h2>봉우리는 흔하게, 골은 드물게</h2>
+    <p class="lead">가로축은 "가능한 값"(여기선 글리프를 정하는 한 좌표), 세로축은 "그 값이 나올 그럴듯함". 봉우리 근처 값은 흔하고, 평평한 골짜기 값은 드물어요. 분포 모양을 바꿔 보며, 어느 글리프가 "흔한 얼굴"이고 어느 게 "희귀한 얼굴"인지 보세요.</p>
+    <div class="ctl" id="play0"></div>
+    <div class="scene" id="s0"></div>
+    <p class="big" id="lab0"></p>
+    <p class="note" style="margin-top:6px">→ 분포 = 값마다 매긴 '그럴듯함'. 봉우리=흔함, 골=드묾.</p>
+  </section>
+
+  <!-- STEP 1 -->
+  <section class="panel" data-panel="1">
+    <span class="kicker" style="color:var(--hot)">Step 01 — Sampling Is Rolling Dice</span>
+    <h2>뽑을수록 분포를 닮아간다</h2>
+    <p class="lead">▶를 누를 때마다 분포에서 표본 하나를 뽑아요 — 봉우리 근처가 자주, 골은 드물게 나오죠. 뽑힌 값들을 막대(히스토그램)로 쌓으면, 처음엔 들쭉날쭉하다가 점점 <b>원래 분포 곡선을 닮아가요</b>. 이게 "분포에서 뽑는다"의 실제 동작이에요.</p>
+    <div class="ctl" id="play1"></div>
+    <div class="scene" id="s1"></div>
+    <p class="big" id="lab1"></p>
+    <p class="note" style="margin-top:6px">→ 많이 뽑을수록 표본들의 모양이 분포를 닮아요. 뽑기=생성 한 번.</p>
+  </section>
+
+  <!-- STEP 2 -->
+  <section class="panel" data-panel="2">
+    <span class="kicker" style="color:var(--v)">Step 02 — What "New" Means</span>
+    <h2>새것일까, 베낀 것일까</h2>
+    <p class="lead">뽑은 표본은 훈련 데이터에 <b>정확히 같은 게 없어도</b> 그럴듯해요 — 봉우리 사이 어디든 떨어질 수 있으니까. 그게 "새로움"이에요. 하지만 주의 — "새롭다"가 곧 "한 번도 안 본 것"은 아니에요. 모델이 게을러서 <b>본 걸 거의 베껴</b> 내놓을 수도 있죠. 그 함정은 14장(평가)에서 다시 만나요.</p>
+    <div class="ctl" id="play2"></div>
+    <div class="scene" id="s2"></div>
+    <p class="big" id="lab2"></p>
+    <div class="nbox">⚠️ <b>'새로움' ≠ '안 본 것'</b> — 좋은 생성은 분포의 빈자리까지 메워 진짜 새것을 내놓아요. 하지만 모델이 훈련 표본 위에만 좁게 모이면, 뽑아도 거의 <b>복사본</b>이 나와요(암기). "새로 만들었다"고 안심하면 안 되는 이유 — <b style="color:var(--v)">CH 14</b>에서 베끼기·다양성을 측정해요.</div>
+    <p class="note" style="margin-top:6px">→ 새로움 = 같은 분포의 새 점. 단, 베끼기일 수도(→14).</p>
+  </section>
+
+  <!-- STEP 3 -->
+  <section class="panel" data-panel="3">
+    <span class="kicker" style="color:var(--good)">Step 03 — Takeaways</span>
+    <h2>정리</h2>
+    <p class="lead">분포 = 그럴듯함의 그래프, 뽑기 = 그 모양대로 주사위 굴리기. 모든 생성모델은 결국 "분포를 배워 뽑는다"의 두 박자를 <b>다르게 푸는</b> 방법들이에요. 그런데 글리프 하나를 정하는 데 좌표가 여러 개라면, 그 좌표들이 사는 공간은 어떤 모습일까요? 다음은 그 <b>잠재공간</b>이에요.</p>
+    <div class="scene" id="s3"></div>
+    <p class="big" id="lab3"></p>
+    <p class="note" style="margin-top:14px">→ 다음 → <a href="03-latent-space.html" style="color:var(--v);font-weight:700">CH 03 · 잠재공간</a></p>
+  </section>
+
+  <p class="foot">// 코드 없는 직관 입문 · <a href="index.html">목차</a></p>
+</div>
+
+<script src="shared/lib.js"></script>
+<script src="shared/lib-gen.js"></script>
+<script>
+VZ.mountTopnav('#topnav', '02 · 분포에서 표본 뽑기');
+VZ.setupStepper();
+const G=VZ.GEN;
+// distribution: mixture of two gaussians, shape controlled by 'spread'
+function makeFn(mode){ // mode 0 = two peaks, 1 = one wide peak
+  if(mode===0) return nx=>0.35*Math.exp(-((nx-0.3)**2)/0.012)+0.9*Math.exp(-((nx-0.68)**2)/0.02);
+  return nx=>Math.exp(-((nx-0.5)**2)/0.05);
+}
+
+// ===== STEP 0 =====
+(function(){
+  let mode=0, probe=0.5;
+  const play=document.getElementById('play0');
+  play.innerHTML=`<button class="btn" id="m0">두 봉우리</button><button class="btn" id="m1">한 봉우리</button>`+
+                 `<label>글리프 좌표 <input type="range" id="pr" min="2" max="98" value="50"></label>`;
+  function render(){ const W=460,H=240; const fn=makeFn(mode);
+    let s=G.dist1d(70,18,330,170,{fn, color:'var(--q)', title:'분포 — 값마다의 그럴듯함'});
+    const P=G.plane({x:70,y:18,w:330,h:170});
+    s+=`<line x1="${P.px(probe).toFixed(1)}" y1="${P.py(0).toFixed(1)}" x2="${P.px(probe).toFixed(1)}" y2="${P.py(VZ.clamp(fn(probe),0,1)).toFixed(1)}" stroke="${G.C.hot}" stroke-width="1.6" stroke-dasharray="3 3"/>`;
+    // glyph at this coordinate below
+    s+=G.glyph(P.px(probe), 220, 18, probe, 0.5, {stroke:'var(--v)',lw:1.4});
+    document.getElementById('s0').innerHTML=G.svg(W,H,s,'분포 모양');
+    document.getElementById('m0').className='btn'+(mode===0?' active':'');
+    document.getElementById('m1').className='btn'+(mode===1?' active':'');
+    const d=fn(probe);
+    document.getElementById('lab0').innerHTML=`이 좌표(${probe.toFixed(2)})의 글리프는 그럴듯함 <b style="color:${d>0.5?G.C.good:G.C.dead}">${(d*100).toFixed(0)}%</b> — ${d>0.5?'봉우리 근처라 흔한 얼굴이에요.':'골짜기라 드문 얼굴이에요.'} 봉우리를 짚어보세요.`;
+  }
+  document.getElementById('m0').onclick=()=>{mode=0;render();};
+  document.getElementById('m1').onclick=()=>{mode=1;render();};
+  document.getElementById('pr').oninput=e=>{probe=e.target.value/100;render();};
+  render();
+})();
+
+// ===== STEP 1: sampling histogram =====
+(function(){
+  const fn=makeFn(0); const BIN=24; let bins=new Array(BIN).fill(0), total=0, seed=2;
+  const play=document.getElementById('play1');
+  play.innerHTML=`<button class="btn" id="d1">×1 뽑기 ▶</button><button class="btn" id="d10">×30 뽑기 ▶▶</button><button class="btn" id="c1">비우기</button><span class="note" id="cnt1" style="margin-left:8px"></span>`;
+  // rejection sampling from fn
+  function draw(){ const R=G.rng(seed++); for(let t=0;t<200;t++){ const x=R(), y=R(); if(y<fn(x)){ bins[Math.min(BIN-1,Math.floor(x*BIN))]++; total++; return; } } total++; }
+  function render(){ const W=460,H=240; const P=G.plane({x:70,y:18,w:330,h:200});
+    let s=G.dist1d(70,18,330,200,{fn, color:'var(--q)', title:`표본 ${total}개의 히스토그램 vs 분포`, fill:false});
+    const mx=Math.max(1,...bins); const bw=(330-12)/BIN;
+    for(let i=0;i<BIN;i++){ if(bins[i]===0)continue; const hh=(bins[i]/mx)*180; const x=70+6+i*bw;
+      s+=`<rect x="${x.toFixed(1)}" y="${(P.py(0)-hh).toFixed(1)}" width="${(bw-1.5).toFixed(1)}" height="${hh.toFixed(1)}" fill="${G.C.v}" opacity="0.55"/>`; }
+    document.getElementById('s1').innerHTML=G.svg(W,H,s,'히스토그램');
+    document.getElementById('cnt1').textContent=`${total} 표본`;
+    document.getElementById('lab1').innerHTML= total<10
+      ? `아직 <b>${total}개</b> — 들쭉날쭉해요. 더 뽑아보세요.`
+      : `<b>${total}개</b> 뽑으니 보라 막대(표본)가 청록 곡선(분포)을 점점 닮죠. 봉우리엔 많이, 골엔 거의 안 쌓여요 — 이게 "분포대로 뽑힌다"예요.`;
+  }
+  document.getElementById('d1').onclick=()=>{draw();render();};
+  document.getElementById('d10').onclick=()=>{for(let k=0;k<30;k++)draw();render();};
+  document.getElementById('c1').onclick=()=>{bins=new Array(BIN).fill(0);total=0;render();};
+  render();
+})();
+
+// ===== STEP 2: novelty vs copy =====
+(function(){
+  let mode=0; // 0 good (fills gaps), 1 memorize (copies)
+  const play=document.getElementById('play2');
+  play.innerHTML=`<button class="btn" id="g2">좋은 생성 (빈자리도)</button><button class="btn" id="b2">암기 (베끼기)</button>`;
+  const R=G.rng(9); const train=[]; for(let i=0;i<8;i++) train.push(0.15+i*0.09 + (R()-0.5)*0.02);
+  function render(){ const W=460,H=220; const P=G.plane({x:70,y:18,w:330,h:170}); let s=P.frame();
+    s+=`<text x="235" y="12" text-anchor="middle" font-size="10" font-family="monospace" fill="${G.C.muted}">${mode===0?'좋은 생성 — 분포 전체에서':'암기 — 훈련 점 위에만'}</text>`;
+    // training data ticks
+    train.forEach(t=>{ s+=`<line x1="${P.px(t).toFixed(1)}" y1="${P.py(0).toFixed(1)}" x2="${P.px(t).toFixed(1)}" y2="${(P.py(0)-12).toFixed(1)}" stroke="${G.C.data}" stroke-width="2"/>`; });
+    s+=`<text x="${P.px(0.5)}" y="${P.py(0)+16}" text-anchor="middle" font-size="8" font-family="monospace" fill="${G.C.faint}">청록=훈련 데이터, 보라=생성 표본</text>`;
+    // generated samples
+    const R2=G.rng(mode===0?41:42); const gs=[];
+    for(let i=0;i<10;i++){ if(mode===0){ gs.push(0.12+R2()*0.76); } else { gs.push(train[Math.floor(R2()*train.length)] + (R2()-0.5)*0.01); } }
+    gs.forEach(x=>{ s+=`<circle cx="${P.px(x).toFixed(1)}" cy="${(P.py(0)-26).toFixed(1)}" r="4" fill="${G.C.v}" stroke="var(--bg)" stroke-width="0.8"/>`; });
+    document.getElementById('s2').innerHTML=G.svg(W,H,s,'새로움');
+    document.getElementById('g2').className='btn'+(mode===0?' active':'');
+    document.getElementById('b2').className='btn'+(mode===1?' active':'');
+    document.getElementById('lab2').innerHTML= mode===0
+      ? `<b style="color:${G.C.good}">좋은 생성</b> — 보라 표본이 훈련 점 <b>사이 빈자리</b>에도 떨어져요. 본 적 없는 진짜 새것이죠.`
+      : `<b style="color:${G.C.dead}">암기</b> — 보라 표본이 청록 훈련 점에 딱 겹쳐요. "새로 만든" 게 아니라 <b>거의 베낀</b> 거예요. 겉보기엔 그럴듯해 속기 쉬워요.`;
+  }
+  document.getElementById('g2').onclick=()=>{mode=0;render();};
+  document.getElementById('b2').onclick=()=>{mode=1;render();};
+  render();
+})();
+
+// ===== STEP 3 =====
+(function(){ const W=460,H=120;
+  let s=`<text x="${W/2}" y="24" text-anchor="middle" font-size="12.5" font-family="monospace" font-weight="700" fill="${G.C.v}">분포를 배워, 뽑는다</text>`;
+  const rows=[['분포','값마다의 그럴듯함 그래프','var(--q)'],['뽑기','봉우리 자주·골 드물게','var(--v)'],['새로움','같은 분포의 새 점(베끼기 주의)','var(--good)']];
+  rows.forEach((r,idx)=>{ const y=38+idx*26; s+=`<rect x="20" y="${y}" width="${W-40}" height="22" rx="6" fill="var(--panel)" stroke="${r[2]}" stroke-width="1.1"/><text x="34" y="${y+15}" fill="${r[2]}" font-size="11" font-family="monospace" font-weight="700">${r[0]}</text><text x="${W-30}" y="${y+15}" fill="var(--ink)" font-size="9.5" font-family="monospace" text-anchor="end">${r[1]}</text>`; });
+  document.getElementById('s3').innerHTML=G.svg(W,H,s,'정리');
+  document.getElementById('lab3').innerHTML='글리프를 정하는 좌표들의 공간 — 다음, 잠재공간.';
+})();
+</script>
+</body>
+</html>

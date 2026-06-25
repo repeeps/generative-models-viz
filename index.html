@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>생성모델, 눈으로 보기</title>
+<link rel="stylesheet" href="shared/theme.css">
+<link rel="icon" type="image/svg+xml" href="shared/favicon.svg">
+<style>
+  .hero{text-align:center; padding:30px 0 10px;}
+  .hero .tag{font-family:'JetBrains Mono',monospace; font-size:12px; letter-spacing:.25em; text-transform:uppercase; color:var(--v);}
+  .hero h1{font-size:clamp(30px,6vw,52px); font-weight:800; letter-spacing:-.03em; margin:14px 0 12px; line-height:1.05;
+    background:linear-gradient(100deg,#fff,#c8b6ff 55%,var(--q)); -webkit-background-clip:text; background-clip:text; color:transparent;}
+  .hero p{color:var(--muted); max-width:680px; margin:0 auto; font-size:16px;}
+  .seclabel{font-family:'JetBrains Mono',monospace; font-size:12px; letter-spacing:.18em; text-transform:uppercase;
+    color:var(--muted); margin:46px 0 16px; padding-bottom:8px; border-bottom:1px solid var(--line);}
+  .seclabel b{color:var(--v);}
+  .cards{display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:16px;}
+  .ccard{display:block; text-decoration:none; background:var(--panel); border:1px solid var(--line); border-radius:18px;
+    padding:22px; transition:.22s; position:relative; overflow:hidden;}
+  .ccard::before{content:''; position:absolute; inset:0 auto 0 0; width:4px; background:var(--accent,var(--v)); opacity:.8;}
+  .ccard:hover{transform:translateY(-4px); border-color:var(--accent,var(--v)); box-shadow:0 14px 36px rgba(0,0,0,.35);}
+  .ccard .num{font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--accent,var(--v)); font-weight:700;}
+  .ccard h3{margin:8px 0 8px; font-size:19px; color:var(--ink); letter-spacing:-.01em;}
+  .ccard p{margin:0; font-size:13.5px; color:var(--muted); line-height:1.6;}
+  .ccard .chips{margin-top:14px; display:flex; gap:6px; flex-wrap:wrap;}
+  .ccard .chip{font-family:'JetBrains Mono',monospace; font-size:10px; padding:3px 8px; border-radius:6px;
+    background:var(--panel-2); border:1px solid var(--line); color:var(--muted);}
+  .foot{margin-top:60px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hero">
+    <div class="tag">수식·코드 없는 직관 입문 · 0번 + 16챕터</div>
+    <h1>생성모델, 눈으로 보기</h1>
+    <p>기계가 고양이를 <b>알아보는</b> 게 아니라, 한 번도 없던 고양이를 <b>새로 그려내는</b> 건 무슨 뜻일까요? 핵심은 하나예요 — 데이터의 <b>분포를 배워, 거기서 새 표본을 뽑는다</b>. 이 트랙은 그 분포를 다루는 세 갈래 — 잠재공간을 빚는 <b>VAE</b>, 위조범과 감별사가 겨루는 <b>GAN</b>, 노이즈를 걷어내며 그리는 <b>Diffusion</b> — 을 움직이는 그림으로 봐요. 진짜 사진 대신, 좌표가 매끄럽게 모양으로 바뀌는 글리프로 — 원리는 같고, 눈으로는 더 또렷하게.</p>
+  </div>
+
+  <a href="00-intro.html" style="display:block;text-decoration:none;margin:8px 0 4px;padding:18px 22px;border-radius:16px;background:linear-gradient(100deg,rgba(192,132,252,.14),rgba(55,189,248,.08));border:1px solid var(--v);transition:.2s">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--v);font-weight:700">👋 처음이세요?</div>
+    <div style="font-size:18px;font-weight:800;color:var(--ink);margin:6px 0 4px">0번 — 만들어내는 기계</div>
+    <div style="font-size:13.5px;color:var(--muted)">알아보기(판별) vs 만들기(생성)의 차이, '분포를 배워 뽑는다'는 척추, 글리프 약속, 코스맵을 한눈에. →</div>
+  </a>
+  <p class="note" style="margin:6px 2px 0;color:var(--faint);font-size:13px">📚 처음이라면 <b>0번부터 순서대로</b>. <b>분포를 배워 새로 뽑기</b>가 전체 척추예요(딥러닝 기초·트랜스포머는 별도 트랙). 두 기둥은 <b style="color:var(--v)">VAE(B)</b>와 <b style="color:var(--v)">Diffusion(D)</b>, GAN(C)은 그 사이 다리.</p>
+
+  <div class="seclabel">PART A · 생성이란 무엇인가</div>
+  <div class="cards">
+    <a class="ccard" href="01-discriminative.html"><div class="num">01</div><h3>판별 vs 생성</h3><p>경계를 긋는 게 판별, 분포를 그려 새로 뽑는 게 생성. 무엇이 더 어려운 일일까요?</p><div class="chips"><span class="chip">p(x)</span></div></a>
+    <a class="ccard" href="02-sampling.html"><div class="num">02</div><h3>분포에서 표본 뽑기</h3><p>"분포를 배운다"의 진짜 의미 — 그 모양에서 새 점을 뽑는 것. '새롭다'는 건 뭘까요?</p><div class="chips"><span class="chip">sampling</span></div></a>
+    <a class="ccard" href="03-latent-space.html"><div class="num">03</div><h3>잠재공간</h3><p>두 손잡이를 돌리면 생성물이 매끄럽게 변해요. 의미가 담긴 압축된 좌표 — 의 꿈.</p><div class="chips"><span class="chip">latent</span><span class="chip">보간</span></div></a>
+  </div>
+
+  <div class="seclabel">PART B · <b>잠재변수 모델 — VAE</b> (기둥)</div>
+  <div class="cards">
+    <a class="ccard" href="04-autoencoder.html"><div class="num">04</div><h3>오토인코더</h3><p>압축했다가 되살리기. 병목을 지나며 데이터의 핵심만 남겨요 — 첫 잠재공간.</p><div class="chips"><span class="chip">압축·복원</span></div></a>
+    <a class="ccard" href="05-vae.html"><div class="num">05</div><h3>AE의 한계 → VAE</h3><p>빈자리에서 뽑으면 쓰레기가 나와요. 점 대신 분포로 채워 매끄러운 잠재공간으로.</p><div class="chips"><span class="chip">VAE</span><span class="chip">prior</span></div></a>
+    <a class="ccard" href="06-reparam.html"><div class="num">06</div><h3>주사위를 밖으로</h3><p>무작위를 따로 빼내면 손잡이를 조절할 수 있어요(reparam). 그리고 보간으로 새 생성.</p><div class="chips"><span class="chip">z=μ+σ·ε</span></div></a>
+  </div>
+
+  <div class="seclabel">PART C · 적대적 생성 — GAN (다리)</div>
+  <div class="cards">
+    <a class="ccard" href="07-gan.html"><div class="num">07</div><h3>위조범 vs 감별사</h3><p>한쪽은 가짜를 만들고, 한쪽은 진짜를 가려내요. 둘이 겨루며 같이 강해지죠.</p><div class="chips"><span class="chip">G vs D</span></div></a>
+    <a class="ccard" href="08-gan-training.html"><div class="num">08</div><h3>학습의 줄다리기</h3><p>균형이 무너지면 — 똑같은 것만 찍어내는 모드 붕괴. 과적합의 사촌이에요.</p><div class="chips"><span class="chip">mode collapse</span></div></a>
+  </div>
+
+  <div class="seclabel">PART D · <b>확산모델 — Diffusion</b> (기둥)</div>
+  <div class="cards">
+    <a class="ccard" href="09-forward.html"><div class="num">09</div><h3>노이즈로 무너뜨리기</h3><p>그림에 노이즈를 조금씩 더해 완전한 잡음으로. 이 방향엔 학습이 없어요 — 고정 레시피.</p><div class="chips"><span class="chip">forward</span></div></a>
+    <a class="ccard" href="10-reverse.html"><div class="num">10</div><h3>노이즈 걷어내기</h3><p>한 스텝만 살짝 되돌리기. 노이즈를 맞히는 건 깨끗한 쪽을 맞히는 것과 같은 말.</p><div class="chips"><span class="chip">reverse</span></div></a>
+    <a class="ccard" href="11-train-noise.html"><div class="num">11</div><h3>노이즈를 맞혀라</h3><p>학습은 사실 회귀예요 — 입력은 노이즈 낀 그림, 정답은 섞인 노이즈. 1번 트랙과 같은 일.</p><div class="chips"><span class="chip">ε 예측</span></div></a>
+    <a class="ccard" href="12-sampling-loop.html"><div class="num">12</div><h3>한 장을 그려내기</h3><p>순수 노이즈에서 시작해 작은 디노이징을 수십 번 — 점점 또렷한 생성물로.</p><div class="chips"><span class="chip">sampling</span></div></a>
+    <a class="ccard" href="13-guidance.html"><div class="num">13</div><h3>조건 주기</h3><p>"이런 걸 그려줘"라고 방향을 밀어요. 가이던스 손잡이: 충실도↔다양성↔과하면 깨짐.</p><div class="chips"><span class="chip">guidance</span><span class="chip">text→img</span></div></a>
+  </div>
+
+  <div class="seclabel">PART E · 평가 · 종합 · 너머</div>
+  <div class="cards">
+    <a class="ccard" href="14-evaluation.html"><div class="num">14</div><h3>잘 만들었나?</h3><p>품질과 다양성을 함께. 베끼기·모드붕괴 함정과, 두 무리의 분포를 비교하는 FID.</p><div class="chips"><span class="chip">FID</span></div></a>
+    <a class="ccard" href="15-pipeline.html"><div class="num">15</div><h3>한 흐름 종합</h3><p>세 패러다임(VAE·GAN·Diffusion)을 한 표로. 어떤 일에 무엇을 쓸까.</p><div class="chips"><span class="chip">비교</span></div></a>
+    <a class="ccard" href="16-beyond.html"><div class="num">16</div><h3>너머 · 회고</h3><p>잠재공간 + 확산을 합친 잠재확산, 글 한 글자씩 잇는 자기회귀 생성, 그리고 전체 회고.</p><div class="chips"><span class="chip">latent diffusion</span></div></a>
+  </div>
+
+  <p class="foot" style="color:var(--faint);font-size:13px;text-align:center;border-top:1px solid var(--line);padding-top:22px;">// 코드 없는 직관 입문 · 모든 그림은 브라우저에서 실시간 계산</p>
+</div>
+</body>
+</html>

@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>07 · 위조범 vs 감별사 — 생성모델, 눈으로 보기</title>
+<link rel="stylesheet" href="shared/theme.css">
+<link rel="icon" type="image/svg+xml" href="shared/favicon.svg">
+<style>
+  .big{font-family:'JetBrains Mono',monospace; font-size:13.5px; color:var(--ink); margin:12px 0 6px; padding:14px 16px; border-radius:14px; background:var(--panel-2); border:1px solid var(--line); line-height:1.6;}
+  .big:empty{display:none;}
+  .ctl{display:flex; align-items:center; gap:12px; margin:10px 0; flex-wrap:wrap;}
+  .ctl label{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted)}
+  svg{display:block; width:100%;}
+  code{font-family:'JetBrains Mono',monospace;background:var(--panel-2);padding:1px 5px;border-radius:5px;font-size:.92em}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topnav" id="topnav"></div>
+
+  <header>
+    <div class="tag" style="color:var(--q)">PART C · 적대적 생성 — GAN (다리) — CH 07</div>
+    <h1>위조범 vs 감별사</h1>
+    <p class="intro">VAE의 "평균내기 흐릿함"을 정반대 발상으로 깨요. 두 네트워크를 <b>맞붙여요</b> — <b>생성자</b>(위조범)는 가짜를 만들어 진짜처럼 속이려 하고, <b>판별자</b>(감별사)는 진짜와 가짜를 가려내려 해요. 위조범은 감별사를 속이려 점점 정교해지고, 감별사는 안 속으려 점점 까다로워지죠. 이 <b>쫓고 쫓기는 경쟁</b>이 생성자를 — 누가 시키지 않아도 — 선명하고 진짜 같은 결과로 몰아가요.</p>
+  </header>
+
+  <nav class="stepper" id="stepper">
+    <button data-s="0" class="active">00 · 두 역할</button>
+    <button data-s="1">01 · 겨루며 강해진다</button>
+    <button data-s="2">02 · 균형점</button>
+    <button data-s="3">03 · 정리</button>
+  </nav>
+
+  <!-- STEP 0 -->
+  <section class="panel show" data-panel="0">
+    <span class="kicker" style="color:var(--q)">Step 00 — Two Roles</span>
+    <h2>만드는 자, 가려내는 자</h2>
+    <p class="lead"><b>생성자</b>는 무작위 노이즈를 받아 가짜 생성물을 빚어요. <b>판별자</b>는 그게 진짜 데이터인지 생성자의 가짜인지 점수로 답하죠("진짜일 확률 몇 %"). 둘 사이를 토글해, 각자가 무슨 일을 하는지 보세요. 핵심: 생성자는 <b>진짜를 직접 본 적 없어요</b> — 오직 판별자의 반응으로만 배워요.</p>
+    <div class="ctl" id="play0"></div>
+    <div class="scene" id="s0"></div>
+    <p class="big" id="lab0"></p>
+    <p class="note" style="margin-top:6px">→ 생성자=가짜 제작, 판별자=진짜/가짜 판정. 생성자는 판별자로만 배워요.</p>
+  </section>
+
+  <!-- STEP 1 -->
+  <section class="panel" data-panel="1">
+    <span class="kicker" style="color:var(--hot)">Step 01 — They Improve by Competing</span>
+    <h2>쫓고 쫓기며 둘 다 강해진다</h2>
+    <p class="lead">번갈아 훈련해요. 판별자가 가짜를 잘 잡으면 → 생성자는 더 정교하게 속이도록 고쳐지고 → 그러면 판별자도 더 까다로워지고… ▶로 라운드를 진행하며, 생성물이 점점 진짜 같아지고 판별자의 "진짜다" 점수가 올라가는 걸 보세요. 경쟁이 곧 학습 신호예요.</p>
+    <div class="ctl" id="play1"></div>
+    <div class="scene" id="s1"></div>
+    <p class="big" id="lab1"></p>
+    <p class="note" style="margin-top:6px">→ G가 좋아지면 D도 까다로워지고, 그게 다시 G를 밀어올려요.</p>
+  </section>
+
+  <!-- STEP 2 -->
+  <section class="panel" data-panel="2">
+    <span class="kicker" style="color:var(--v)">Step 02 — The Equilibrium</span>
+    <h2>가짜가 진짜와 구분 안 될 때</h2>
+    <p class="lead">경쟁의 이상적 끝 — 생성자의 가짜가 진짜와 <b>구분되지 않는</b> 지점이에요. 그러면 아무리 뛰어난 판별자도 찍기(50:50)밖에 못 해요. 생성자가 데이터 분포를 그대로 흉내 낸 거죠. 슬라이더로 생성자의 실력을 올리며, 판별자 점수가 50%로 수렴하는 걸 보세요.</p>
+    <div class="ctl" id="play2"></div>
+    <div class="scene" id="s2"></div>
+    <p class="big" id="lab2"></p>
+    <p class="note" style="margin-top:6px">→ 이상적 균형: 판별자가 50%밖에 못 맞힘 = 가짜가 진짜급.</p>
+  </section>
+
+  <!-- STEP 3 -->
+  <section class="panel" data-panel="3">
+    <span class="kicker" style="color:var(--good)">Step 03 — Takeaways</span>
+    <h2>정리</h2>
+    <p class="lead">GAN = 위조범과 감별사의 경쟁. 평균내기 대신 "안 속을 만큼 선명하게"가 강제돼, VAE보다 또렷한 결과가 나와요. 하지만 두 네트워크를 <b>동시에 균형 맞춰</b> 훈련하는 건 까다로워요 — 한쪽이 너무 세지거나, 생성자가 꼼수를 부리면 무너지죠. 그 대표적 실패가 다음 챕터예요.</p>
+    <div class="scene" id="s3"></div>
+    <p class="big" id="lab3"></p>
+    <p class="note" style="margin-top:14px">→ 다음 → <a href="08-gan-training.html" style="color:var(--v);font-weight:700">CH 08 · 학습의 줄다리기</a></p>
+  </section>
+
+  <p class="foot">// 코드 없는 직관 입문 · <a href="index.html">목차</a></p>
+</div>
+
+<script src="shared/lib.js"></script>
+<script src="shared/lib-gen.js"></script>
+<script>
+VZ.mountTopnav('#topnav', '07 · 위조범 vs 감별사');
+VZ.setupStepper();
+const G=VZ.GEN;
+
+// ===== STEP 0: two roles =====
+(function(){
+  let who=0;
+  const play=document.getElementById('play0');
+  play.innerHTML=`<button class="btn" id="g0">생성자 (위조범)</button><button class="btn" id="d0">판별자 (감별사)</button>`;
+  function render(){ const W=460,H=200; let s='';
+    if(who===0){
+      s+=`<circle cx="60" cy="100" r="16" fill="rgba(192,132,252,.16)" stroke="${G.C.v}" stroke-width="1.4"/><text x="60" y="104" text-anchor="middle" font-size="12">🎲</text>`;
+      s+=`<text x="60" y="135" text-anchor="middle" font-size="8.5" font-family="monospace" fill="${G.C.faint}">노이즈</text>`;
+      s+=G.arrow(78,100,140,100,{color:'var(--slate)',lw:1.4});
+      s+=`<rect x="140" y="74" width="80" height="52" rx="8" fill="var(--panel)" stroke="${G.C.v}" stroke-width="1.8"/><text x="180" y="104" text-anchor="middle" font-size="10" font-family="monospace" font-weight="700" fill="${G.C.v}">생성자 G</text>`;
+      s+=G.arrow(220,100,280,100,{color:'var(--slate)',lw:1.4});
+      s+=G.glyphNoisy(320,100,28,0.4,0.6,0.45,5,{stroke:'var(--v)',label:'가짜'});
+      document.getElementById('lab0').innerHTML=`<b style="color:${G.C.v}">생성자</b> — 무작위 노이즈에서 가짜 생성물을 빚어요. 처음엔 엉성하죠. 진짜 데이터는 못 봐요.`;
+    } else {
+      s+=G.glyph(70,70,22,0.5,0.7,{stroke:'var(--q)',lw:1.2,label:'진짜?'});
+      s+=G.glyphNoisy(70,150,22,0.4,0.4,0.4,9,{stroke:'var(--v)',label:'가짜?'});
+      s+=G.arrow(98,70,160,100,{color:'var(--slate)',lw:1.2});
+      s+=G.arrow(98,150,160,100,{color:'var(--slate)',lw:1.2});
+      s+=`<rect x="160" y="74" width="80" height="52" rx="8" fill="var(--panel)" stroke="${G.C.good}" stroke-width="1.8"/><text x="200" y="104" text-anchor="middle" font-size="10" font-family="monospace" font-weight="700" fill="${G.C.good}">판별자 D</text>`;
+      s+=G.arrow(240,100,290,100,{color:'var(--slate)',lw:1.4});
+      s+=G.gauge(360,100,{val:0.5,label:'진짜일 확률',color:'var(--good)'});
+      document.getElementById('lab0').innerHTML=`<b style="color:${G.C.good}">판별자</b> — 들어온 게 진짜 데이터인지 G의 가짜인지 점수로 답해요. 이 점수가 G의 유일한 선생님이에요.`;
+    }
+    document.getElementById('s0').innerHTML=G.svg(W,H,s,'두 역할');
+    document.getElementById('g0').className='btn'+(who===0?' active':'');
+    document.getElementById('d0').className='btn'+(who===1?' active':'');
+  }
+  document.getElementById('g0').onclick=()=>{who=0;render();};
+  document.getElementById('d0').onclick=()=>{who=1;render();};
+  render();
+})();
+
+// ===== STEP 1: improve by competing =====
+(function(){
+  let round=0; const MAX=6;
+  const play=document.getElementById('play1');
+  play.innerHTML=`<button class="btn" id="prev1">◀</button><button class="btn" id="next1">다음 라운드 ▶</button><button class="btn" id="rs1">처음</button><span class="note" id="cnt1" style="margin-left:8px"></span>`;
+  function render(){ const W=460,H=200; const t=round/MAX; let s='';
+    const noise=VZ.clamp(0.55*(1-t),0,0.55);
+    s+=G.glyph(80,90,30,0.45,0.6,{stroke:'var(--good)',lw:1.2,label:'진짜'});
+    s+=G.glyphNoisy(220,90,30,0.45,0.6,noise,5,{stroke:'var(--v)',label:'G의 가짜'});
+    // discriminator's "real" score for the fake rises toward 50%
+    const dscore=VZ.clamp(0.08+0.42*t,0,0.5);
+    s+=G.gauge(380,80,{val:dscore,label:'D: 가짜를 진짜로 볼 확률',color:'var(--hot)'});
+    s+=`<text x="380" y="120" text-anchor="middle" font-size="9" font-family="monospace" fill="${G.C.muted}">라운드 ${round}/${MAX}</text>`;
+    document.getElementById('s1').innerHTML=G.svg(W,H,s,'경쟁');
+    document.getElementById('cnt1').textContent=`라운드 ${round}/${MAX}`;
+    document.getElementById('lab1').innerHTML= round===0
+      ? `시작 — G의 가짜는 노이즈투성이, D는 쉽게 잡아요(가짜를 진짜로 볼 확률 ≈ 8%).`
+      : round>=MAX ? `라운드 ${MAX} — 가짜가 진짜에 가까워졌고, D가 속을 확률이 50%에 근접해요. 경쟁만으로 여기까지 왔어요.`
+      : `라운드 ${round} — G가 더 정교해지자 D가 속을 확률이 올라가요. 곧 D도 더 까다로워질 거예요.`;
+  }
+  document.getElementById('next1').onclick=()=>{round=Math.min(MAX,round+1);render();};
+  document.getElementById('prev1').onclick=()=>{round=Math.max(0,round-1);render();};
+  document.getElementById('rs1').onclick=()=>{round=0;render();};
+  render();
+})();
+
+// ===== STEP 2: equilibrium =====
+(function(){
+  let skill=0.2;
+  const play=document.getElementById('play2');
+  play.innerHTML=`<label>생성자 실력 <input type="range" id="sk" min="0" max="100" value="20"></label>`;
+  function render(){ const W=460,H=210; const P=G.plane({x:60,y:18,w:300,h:150}); let s=P.frame();
+    s+=`<text x="210" y="12" text-anchor="middle" font-size="10" font-family="monospace" fill="${G.C.muted}">진짜 분포(청록) vs 가짜 분포(보라)</text>`;
+    s+=G.density(P.px(0.4),P.py(0.55),50,46,{color:'var(--q)'});
+    // fake distribution moves to overlap real as skill rises
+    const fx=0.7-(0.3)*skill, fy=0.4+0.15*skill;
+    s+=G.density(P.px(fx),P.py(fy),50,46,{color:'var(--v)'});
+    const dscore=0.5+ (1-skill)*0.45; // D accuracy: high when skill low, ->50% when matched
+    s+=G.gauge(410,70,{val:dscore,label:'D 정확도',color: dscore<0.62?G.C.good:G.C.hot});
+    document.getElementById('s2').innerHTML=G.svg(W,H,s,'균형');
+    document.getElementById('lab2').innerHTML= skill>0.8
+      ? `<b style="color:${G.C.good}">균형 도달</b> — 가짜 분포가 진짜와 거의 겹쳐, D 정확도가 <b>50%</b>(찍기)로 내려왔어요. 가짜가 진짜급이라는 신호.`
+      : `생성자 실력 ${(skill*100|0)}% — 두 분포가 아직 어긋나 D가 ${(dscore*100|0)}%로 잘 잡아요. 실력을 더 올려 겹쳐보세요.`;
+  }
+  document.getElementById('sk').oninput=e=>{skill=e.target.value/100;render();};
+  render();
+})();
+
+// ===== STEP 3 =====
+(function(){ const W=460,H=120;
+  let s=`<text x="${W/2}" y="24" text-anchor="middle" font-size="12.5" font-family="monospace" font-weight="700" fill="${G.C.v}">겨뤄서 선명하게</text>`;
+  const rows=[['두 역할','생성자(위조)·판별자(감별)','var(--v)'],['학습','경쟁이 곧 신호 — 둘 다 강해짐','var(--hot)'],['균형','D가 50%면 가짜=진짜급','var(--good)']];
+  rows.forEach((r,idx)=>{ const y=38+idx*26; s+=`<rect x="20" y="${y}" width="${W-40}" height="22" rx="6" fill="var(--panel)" stroke="${r[2]}" stroke-width="1.1"/><text x="34" y="${y+15}" fill="${r[2]}" font-size="11" font-family="monospace" font-weight="700">${r[0]}</text><text x="${W-30}" y="${y+15}" fill="var(--ink)" font-size="9.5" font-family="monospace" text-anchor="end">${r[1]}</text>`; });
+  document.getElementById('s3').innerHTML=G.svg(W,H,s,'정리');
+  document.getElementById('lab3').innerHTML='균형 맞추기는 까다로워요 — 다음, 학습의 줄다리기와 모드 붕괴.';
+})();
+</script>
+</body>
+</html>

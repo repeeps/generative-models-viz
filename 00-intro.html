@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>0번 · 만들어내는 기계 — 생성모델, 눈으로 보기</title>
+<link rel="stylesheet" href="shared/theme.css">
+<link rel="icon" type="image/svg+xml" href="shared/favicon.svg">
+<style>
+  .big{font-family:'JetBrains Mono',monospace; font-size:13.5px; color:var(--ink); margin:12px 0 6px; padding:14px 16px; border-radius:14px; background:var(--panel-2); border:1px solid var(--line); line-height:1.6;}
+  .big:empty{display:none;}
+  .ctl{display:flex; align-items:center; gap:12px; margin:10px 0; flex-wrap:wrap;}
+  .ctl label{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted)}
+  svg{display:block; width:100%;}
+  .gloss{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin:12px 0}
+  .gcard{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+  .gcard h4{margin:0 0 4px;font-size:13px;font-family:'JetBrains Mono',monospace}
+  .gcard p{margin:0;font-size:12.5px;color:var(--muted);line-height:1.55}
+  code{font-family:'JetBrains Mono',monospace;background:var(--panel-2);padding:1px 5px;border-radius:5px;font-size:.92em}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topnav" id="topnav"></div>
+
+  <header>
+    <div class="tag" style="color:var(--v)">0번 입문</div>
+    <h1>만들어내는 기계</h1>
+    <p class="intro">앞선 트랙에서 기계는 <b>알아보는</b> 법을 배웠어요 — 이건 고양이, 저건 개. 생성모델은 한 걸음 더 나가요: 한 번도 없던 고양이를 <b>새로 그려내요</b>. 비결은 의외로 하나예요 — 데이터의 <b>분포(어떤 게 그럴듯한지의 지도)를 배워, 거기서 새 표본을 뽑는다</b>. 이 한 문장이 VAE·GAN·Diffusion 전부를 관통하는 척추예요. 지금은 큰 그림만.</p>
+  </header>
+
+  <nav class="stepper" id="stepper">
+    <button data-s="0" class="active">00 · 알아보기 vs 만들기</button>
+    <button data-s="1">01 · 분포를 배워 뽑기</button>
+    <button data-s="2">02 · 글리프 약속·용어</button>
+    <button data-s="3">03 · 코스맵</button>
+  </nav>
+
+  <!-- STEP 0 -->
+  <section class="panel show" data-panel="0">
+    <span class="kicker" style="color:var(--v)">Step 00 — Recognize vs Create</span>
+    <h2>경계를 긋느냐, 그림을 그리느냐</h2>
+    <p class="lead">같은 데이터를 두고 두 가지 일을 할 수 있어요. <b>판별</b>(알아보기)은 "이 점은 어느 쪽?"을 위해 <b>경계</b>를 그어요 — 앞 트랙이 한 일. <b>생성</b>(만들기)은 "이 데이터가 어떻게 생겼나"의 <b>분포 자체</b>를 배워, 그 안에서 <b>새 점을 뽑아</b>요. 토글해 보세요. 생성이 더 많은 걸 배워야 하는, 더 야심찬 일이에요.</p>
+    <div class="ctl" id="play0"></div>
+    <div class="scene" id="s0"></div>
+    <p class="big" id="lab0"></p>
+    <p class="note" style="margin-top:6px">→ 판별=경계(p(어느쪽|점)) · 생성=분포 그려 새로 뽑기(p(점)). 생성이 더 어려워요.</p>
+  </section>
+
+  <!-- STEP 1 -->
+  <section class="panel" data-panel="1">
+    <span class="kicker" style="color:var(--q)">Step 01 — Learn the Distribution, Then Sample</span>
+    <h2>분포를 배워, 거기서 뽑는다</h2>
+    <p class="lead">생성의 척추예요. 먼저 데이터가 모여 있는 <b>분포</b>(어디가 그럴듯하고 어디가 아닌지)를 배워요. 그다음 그 분포에서 <b>주사위를 굴리듯 새 점을 뽑으면</b> — 본 적 없지만 그럴듯한 새 표본이 나와요. ▶로 뽑아 보세요. 각 표본이 하나의 생성물(글리프)이 돼요.</p>
+    <div class="ctl" id="play1"></div>
+    <div class="scene" id="s1"></div>
+    <p class="big" id="lab1"></p>
+    <p class="note" style="margin-top:6px">→ ① 분포 배우기 → ② 표본 뽑기. 모든 생성모델이 이 두 박자를 달리 풀 뿐.</p>
+  </section>
+
+  <!-- STEP 2 -->
+  <section class="panel" data-panel="2">
+    <span class="kicker" style="color:var(--hot)">Step 02 — The Glyph Contract &amp; Vocabulary</span>
+    <h2>사진 대신 글리프, 그리고 용어</h2>
+    <p class="lead">진짜 사진을 띄우는 대신, 이 트랙은 <b>좌표가 모양으로 매끄럽게 바뀌는 글리프(작은 얼굴)</b>를 생성물의 대역으로 써요 — 원리는 똑같고, 눈으로는 더 또렷해요. 슬라이더로 두 잠재좌표를 움직여, 글리프가 끊김 없이 변하는 걸 느껴 보세요. 아래는 계속 나올 용어예요(지금 외울 필요 없어요).</p>
+    <div class="ctl" id="play2"></div>
+    <div class="scene" id="s2"></div>
+    <div class="gloss" id="gloss"></div>
+    <p class="big" id="lab2"></p>
+    <p class="note" style="margin-top:6px">→ 분포·표본·잠재공간·생성자. 글리프는 전 챕터 공통 모티프예요.</p>
+  </section>
+
+  <!-- STEP 3 -->
+  <section class="panel" data-panel="3">
+    <span class="kicker" style="color:var(--good)">Step 03 — Course Map</span>
+    <h2>어디로 가나</h2>
+    <p class="lead">다섯 PART. 생성이 뭔지(A) 다진 뒤, 두 기둥을 깊게 — 잠재공간을 빚는 <b>VAE(B)</b>와 노이즈를 걷어내는 <b>Diffusion(D)</b>. 그 사이 <b>GAN(C)</b>은 겨루기로 생성하는 다리예요. 마지막에 평가하고(E 14), 세 갈래를 한 표로 모으고(15), 잠재확산·자기회귀로 넘어가며 회고(16)해요.</p>
+    <div class="scene" id="s3"></div>
+    <p class="big" id="lab3"></p>
+    <p class="note" style="margin-top:14px">→ 시작 → <a href="01-discriminative.html" style="color:var(--v);font-weight:700">CH 01 · 판별 vs 생성</a></p>
+  </section>
+
+  <p class="foot">// 코드 없는 직관 입문 · <a href="index.html">목차</a></p>
+</div>
+
+<script src="shared/lib.js"></script>
+<script src="shared/lib-gen.js"></script>
+<script>
+VZ.mountTopnav('#topnav', '0번 · 만들어내는 기계');
+VZ.setupStepper();
+const G=VZ.GEN;
+const R0=G.rng(7);
+const DATA=[]; for(let i=0;i<40;i++){ const a=R0()*6.28, r=0.18+R0()*0.12; DATA.push({x:0.5+r*Math.cos(a)*1.3, y:0.5+r*Math.sin(a)}); }
+
+// ===== STEP 0: recognize vs create =====
+(function(){
+  let mode=0;
+  const play=document.getElementById('play0');
+  play.innerHTML=`<button class="btn" id="m0">판별 (알아보기)</button><button class="btn" id="m1">생성 (만들기)</button>`;
+  const two=DATA.map((p,i)=>({x:p.x,y:p.y,c:(p.x+p.y)>1?'var(--q)':'var(--hot)'}));
+  function render(){ const W=460,H=240; let s='';
+    if(mode===0){
+      s=G.scatter(70,18,330,200,{pts:two, line:{m:1.0,b:-0.02,color:'var(--good)'}, title:'판별 — 경계를 긋는다'});
+      document.getElementById('s0').innerHTML=G.svg(W,H,s,'판별');
+      document.getElementById('lab0').innerHTML=`<b style="color:${G.C.good}">판별</b> — "이 점은 청록일까 앰버일까?"만 답하면 돼요. 경계 하나면 충분하죠. 데이터가 <b>어떻게 생겼는지</b>는 몰라도 돼요.`;
+    } else {
+      const P=G.plane({x:70,y:18,w:330,h:200}); s=P.frame();
+      s+=`<text x="235" y="12" text-anchor="middle" font-size="10" font-family="monospace" fill="${G.C.muted}">생성 — 분포를 배워 새로 뽑는다</text>`;
+      s+=G.density(P.px(0.5),P.py(0.5),90,70,{color:'var(--q)'});
+      DATA.forEach(p=>s+=`<circle cx="${P.px(p.x).toFixed(1)}" cy="${P.py(p.y).toFixed(1)}" r="2.6" fill="${G.C.data}" opacity="0.5"/>`);
+      // a freshly sampled glyph
+      s+=G.glyph(P.px(0.5),P.py(0.5),22,0.4,0.6,{stroke:'var(--v)',lw:1.6});
+      s+=`<text x="${P.px(0.5)}" y="${P.py(0.5)+40}" text-anchor="middle" font-size="8.5" font-family="monospace" fill="${G.C.v}">새 표본</text>`;
+      document.getElementById('s0').innerHTML=G.svg(W,H,s,'생성');
+      document.getElementById('lab0').innerHTML=`<b style="color:${G.C.v}">생성</b> — 데이터가 모인 <b>분포 전체</b>를 배워야 해요. 그래야 그 안에서 본 적 없는 새 표본(가운데 글리프)을 뽑을 수 있죠. 훨씬 많은 걸 알아야 하는 일이에요.`;
+    }
+    document.getElementById('m0').className='btn'+(mode===0?' active':'');
+    document.getElementById('m1').className='btn'+(mode===1?' active':'');
+  }
+  document.getElementById('m0').onclick=()=>{mode=0;render();};
+  document.getElementById('m1').onclick=()=>{mode=1;render();};
+  render();
+})();
+
+// ===== STEP 1: learn distribution then sample =====
+(function(){
+  let samples=[];
+  const play=document.getElementById('play1');
+  play.innerHTML=`<button class="btn" id="draw1">새 표본 뽑기 ▶</button><button class="btn" id="clr1">비우기</button><span class="note" id="cnt1" style="margin-left:8px"></span>`;
+  let seed=11;
+  function render(){ const W=460,H=240; const P=G.plane({x:70,y:18,w:330,h:200}); let s=P.frame();
+    s+=`<text x="235" y="12" text-anchor="middle" font-size="10" font-family="monospace" fill="${G.C.muted}">① 배운 분포에서  ② 새 점을 뽑기</text>`;
+    s+=G.density(P.px(0.5),P.py(0.5),95,72,{color:'var(--q)'});
+    samples.forEach(p=>{ s+=`<circle cx="${P.px(p.x).toFixed(1)}" cy="${P.py(p.y).toFixed(1)}" r="4" fill="${G.C.v}" stroke="var(--bg)" stroke-width="1"/>`; });
+    document.getElementById('s1').innerHTML=G.svg(W,H,s,'분포에서 뽑기');
+    document.getElementById('cnt1').textContent=`뽑은 표본 ${samples.length}개`;
+    document.getElementById('lab1').innerHTML= samples.length===0
+      ? `청록 구름이 <b>배운 분포</b>예요(데이터가 그럴듯하게 모인 곳). ▶로 그 안에서 새 점을 뽑아보세요.`
+      : `방금 뽑은 <b style="color:${G.C.v}">보라 점</b>들 — 훈련 데이터엔 없던 자리지만 분포 안이라 그럴듯해요. 이게 "생성"이에요. 분포 밖(구석)은 거의 안 뽑히죠.`;
+  }
+  document.getElementById('draw1').onclick=()=>{ const R=G.rng(seed++); // gaussian-ish around center
+    let u=0,v=0; for(let k=0;k<3;k++){u+=R();v+=R();} u=u/3; v=v/3;
+    samples.push({x:0.5+(u-0.5)*0.8, y:0.5+(v-0.5)*0.62}); render(); };
+  document.getElementById('clr1').onclick=()=>{ samples=[]; render(); };
+  render();
+})();
+
+// ===== STEP 2: glyph contract + glossary =====
+(function(){
+  let z1=0.5,z2=0.5;
+  const play=document.getElementById('play2');
+  play.innerHTML=`<label>z₁ <input type="range" id="z1" min="0" max="100" value="50"></label>`+
+                 `<label>z₂ <input type="range" id="z2" min="0" max="100" value="50"></label>`;
+  function render(){ const W=460,H=160; let s='';
+    s+=`<text x="230" y="16" text-anchor="middle" font-size="10" font-family="monospace" fill="${G.C.muted}">두 잠재좌표 → 매끄럽게 변하는 생성물</text>`;
+    // show 3 neighbor glyphs + the selected big one to emphasize continuity
+    s+=G.glyph(120,86,30,VZ.clamp(z1-0.18,0,1),z2,{label:'z₁ 낮음'});
+    s+=G.glyph(340,86,30,VZ.clamp(z1+0.18,0,1),z2,{label:'z₁ 높음'});
+    s+=G.glyph(230,86,40,z1,z2,{stroke:'var(--v)',lw:1.8,label:'지금'});
+    document.getElementById('s2').innerHTML=G.svg(W,H,s,'글리프');
+    document.getElementById('lab2').innerHTML=`z₁=<b style="color:${G.C.v}">${(z1).toFixed(2)}</b>, z₂=<b style="color:${G.C.v}">${(z2).toFixed(2)}</b> — 슬라이더를 움직이면 얼굴이 <b>끊김 없이</b> 변해요. 이 "매끄러움"이 잠재공간의 핵심이에요(3·5장).`;
+  }
+  document.getElementById('z1').oninput=e=>{z1=e.target.value/100;render();};
+  document.getElementById('z2').oninput=e=>{z2=e.target.value/100;render();};
+  const items=[
+    ['분포 (distribution)','어떤 데이터가 얼마나 그럴듯한지의 지도. 생성모델이 배우는 대상.','var(--q)'],
+    ['표본 (sample)','분포에서 뽑은 하나의 결과물 = 생성된 글리프.','var(--v)'],
+    ['잠재공간 (latent space)','생성물을 몇 개 좌표로 압축한 의미의 공간. 좌표를 움직이면 결과가 변해요.','var(--hot)'],
+    ['생성자 (generator)','좌표·노이즈를 받아 표본을 뱉는 부분. VAE의 디코더, GAN의 생성자 등.','var(--good)']
+  ];
+  document.getElementById('gloss').innerHTML=items.map(it=>`<div class="gcard" style="border-color:${it[2]}"><h4 style="color:${it[2]}">${it[0]}</h4><p>${it[1]}</p></div>`).join('');
+  render();
+})();
+
+// ===== STEP 3: course map =====
+(function(){ const W=460,H=210;
+  const parts=[['A','생성이란 무엇인가','var(--q)',false],['B','잠재변수 모델 — VAE · 기둥','var(--v)',true],['C','적대적 생성 — GAN · 다리','var(--q)',false],['D','확산모델 — Diffusion · 기둥','var(--v)',true],['E','평가·종합·너머','var(--good)',false]];
+  let s='';
+  parts.forEach((p,i)=>{ const y=14+i*38; s+=`<rect x="20" y="${y}" width="${W-40}" height="32" rx="8" fill="var(--panel)" stroke="${p[2]}" stroke-width="${p[3]?2:1.2}"/>`;
+    s+=`<text x="36" y="${y+21}" font-size="13" font-family="monospace" font-weight="700" fill="${p[2]}">${p[0]}</text>`;
+    s+=`<text x="64" y="${y+21}" font-size="12.5" font-family="'Pretendard'" fill="var(--ink)">${p[1]}</text>`;
+    if(p[3]) s+=`<text x="${W-34}" y="${y+21}" text-anchor="end" font-size="10" font-family="monospace" fill="var(--v)">★ 기둥</text>`;
+  });
+  document.getElementById('s3').innerHTML=G.svg(W,H,s,'코스맵');
+  document.getElementById('lab3').innerHTML='두 기둥 <b style="color:'+G.C.v+'">VAE</b>와 <b style="color:'+G.C.v+'">Diffusion</b>을 깊게, GAN은 다리. 출발해요.';
+})();
+</script>
+</body>
+</html>

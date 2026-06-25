@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>12 · 한 장을 그려내기 — 생성모델, 눈으로 보기</title>
+<link rel="stylesheet" href="shared/theme.css">
+<link rel="icon" type="image/svg+xml" href="shared/favicon.svg">
+<style>
+  .big{font-family:'JetBrains Mono',monospace; font-size:13.5px; color:var(--ink); margin:12px 0 6px; padding:14px 16px; border-radius:14px; background:var(--panel-2); border:1px solid var(--line); line-height:1.6;}
+  .big:empty{display:none;}
+  .ctl{display:flex; align-items:center; gap:12px; margin:10px 0; flex-wrap:wrap;}
+  .ctl label{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted)}
+  svg{display:block; width:100%;}
+  code{font-family:'JetBrains Mono',monospace;background:var(--panel-2);padding:1px 5px;border-radius:5px;font-size:.92em}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topnav" id="topnav"></div>
+
+  <header>
+    <div class="tag" style="color:var(--v)">PART D · 확산모델 — Diffusion (기둥) — CH 12</div>
+    <h1>한 장을 그려내기</h1>
+    <p class="intro">드디어 생성이에요. 훈련된 "한 스텝 되돌리기" 모델만 있으면 — <b>완전한 노이즈에서 출발</b>해(원본 같은 건 없어요), 그 작은 되돌리기를 <b>수십 번 반복</b>하면 돼요. 모래폭풍 → 흐릿한 형체 → 또렷한 생성물. 한 스텝은 보잘것없지만, 차곡차곡 쌓이면 새 그림 한 장이 태어나죠. VAE처럼 한 방에 뱉지 않고 <b>여러 번 다듬는</b> 게 디퓨전이 선명한 비결이에요.</p>
+  </header>
+
+  <nav class="stepper" id="stepper">
+    <button data-s="0" class="active">00 · 노이즈에서 출발</button>
+    <button data-s="1">01 · 반복 디노이징</button>
+    <button data-s="2">02 · 매번 다른 그림</button>
+    <button data-s="3">03 · 정리</button>
+  </nav>
+
+  <!-- STEP 0 -->
+  <section class="panel show" data-panel="0">
+    <span class="kicker" style="color:var(--v)">Step 00 — Start From Noise</span>
+    <h2>원본 없이, 순수 노이즈로 시작</h2>
+    <p class="lead">9장에서 봤듯 모든 그림은 같은 순수 노이즈로 무너져요. 그러니 생성은 거꾸로 — 그냥 <b>아무 노이즈나 한 장 뽑아</b> 출발선에 놓아요. 여기엔 고양이도 풍경도 없어요, 진짜 무작위 모래폭풍일 뿐. 이걸 되돌리기 모델에 넘길 거예요. 🎲로 새 출발 노이즈를 뽑아 보세요.</p>
+    <div class="ctl" id="play0"></div>
+    <div class="scene" id="s0"></div>
+    <p class="big" id="lab0"></p>
+    <p class="note" style="margin-top:6px">→ 출발 = 무작위 노이즈 한 장. 원본은 필요 없어요.</p>
+  </section>
+
+  <!-- STEP 1 -->
+  <section class="panel" data-panel="1">
+    <span class="kicker" style="color:var(--hot)">Step 01 — Iterate the Denoiser</span>
+    <h2>작은 되돌리기를 수십 번</h2>
+    <p class="lead">▶로 한 스텝씩 되돌려 보세요(또는 자동 재생). 매 스텝 그림이 <b>아주 조금</b> 또렷해져요 — 모래폭풍에서 형체가 떠오르고, 점점 선명한 글리프가 돼요. 한 스텝의 변화는 작지만, 끝까지 쌓이면 완성된 새 생성물이에요. 이 반복이 디퓨전 생성의 전부예요.</p>
+    <div class="ctl" id="play1"></div>
+    <div class="scene" id="s1"></div>
+    <p class="big" id="lab1"></p>
+    <p class="note" style="margin-top:6px">→ 한 스텝씩 또렷하게, 수십 번 반복 → 새 그림 완성.</p>
+  </section>
+
+  <!-- STEP 2 -->
+  <section class="panel" data-panel="2">
+    <span class="kicker" style="color:var(--q)">Step 02 — Different Noise, Different Image</span>
+    <h2>출발 노이즈가 다르면 결과도 다르다</h2>
+    <p class="lead">왜 매번 같은 게 안 나올까요? <b>출발 노이즈가 매번 다르기</b> 때문이에요. 되돌리기는 "원본 복원"이 아니라 "그럴듯한 부류로 끌어당기기"(10장)라, 출발이 다르면 다른 그럴듯한 생성물에 도착해요. 여러 출발 노이즈가 각기 다른 글리프로 자라는 걸 보세요 — 이게 다양성의 원천이에요.</p>
+    <div class="ctl" id="play2"></div>
+    <div class="scene" id="s2"></div>
+    <p class="big" id="lab2"></p>
+    <p class="note" style="margin-top:6px">→ 출발 노이즈가 결과를 정해요. 달라서 다양하게 생성돼요.</p>
+  </section>
+
+  <!-- STEP 3 -->
+  <section class="panel" data-panel="3">
+    <span class="kicker" style="color:var(--good)">Step 03 — Takeaways</span>
+    <h2>정리</h2>
+    <p class="lead">생성 = 노이즈에서 출발해 한 스텝 되돌리기를 수십 번 반복. 여러 번 다듬어 선명하고, 출발 노이즈가 달라 다양해요. 그런데 — 지금은 "아무거나 그럴듯한 것"이 나와요. "<b>고양이를 그려줘</b>"처럼 원하는 걸 시키려면? 되돌리기에 <b>방향</b>을 주면 돼요. 그게 다음 챕터, 조건 주기와 가이던스예요.</p>
+    <div class="scene" id="s3"></div>
+    <p class="big" id="lab3"></p>
+    <p class="note" style="margin-top:14px">→ 다음 → <a href="13-guidance.html" style="color:var(--v);font-weight:700">CH 13 · 조건 주기</a></p>
+  </section>
+
+  <p class="foot">// 코드 없는 직관 입문 · <a href="index.html">목차</a></p>
+</div>
+
+<script src="shared/lib.js"></script>
+<script src="shared/lib-gen.js"></script>
+<script>
+VZ.mountTopnav('#topnav', '12 · 한 장을 그려내기');
+VZ.setupStepper();
+const G=VZ.GEN;
+// a seed determines the final (z1,z2)
+function targetFor(seed){ const R=G.rng(seed); return {z1:R(), z2:R()}; }
+
+// ===== STEP 0: start from noise =====
+(function(){
+  let seed=3;
+  const play=document.getElementById('play0');
+  play.innerHTML=`<button class="btn" id="d0">새 노이즈 뽑기 🎲</button><span class="note" id="cnt0" style="margin-left:8px"></span>`;
+  function render(){ const W=460,H=180; let s='';
+    s+=G.glyphNoisy(230,90,48,0.5,0.5,1,seed,{stroke:'var(--v)',lw:1.6});
+    document.getElementById('s0').innerHTML=G.svg(W,H,s,'출발 노이즈');
+    document.getElementById('cnt0').textContent=`노이즈 #${seed}`;
+    document.getElementById('lab0').innerHTML=`순수 노이즈예요 — 아무 형체도 없죠. 🎲를 누르면 다른 무작위 노이즈가 나와요. 이 한 장이 생성의 출발선이에요.`;
+  }
+  document.getElementById('d0').onclick=()=>{seed=seed*7%9973+1;render();};
+  render();
+})();
+
+// ===== STEP 1: iterate =====
+(function(){
+  const N=8; let step=N, seed=42, timer=null, playing=false;
+  const play=document.getElementById('play1');
+  play.innerHTML=`<button class="btn" id="step1">한 스텝 ▶</button><button class="btn" id="run1">자동 ▶▶</button><button class="btn" id="rs1">노이즈로</button><span class="note" id="cnt1" style="margin-left:8px"></span>`;
+  const tgt=targetFor(seed);
+  function render(){ const W=460,H=190; const lvl=step/N; let s='';
+    s+=G.glyphNoisy(230,90,48,tgt.z1,tgt.z2,lvl,seed,{stroke:lvl<0.15?'var(--good)':'var(--v)',lw:1.6});
+    s+=`<text x="230" y="170" text-anchor="middle" font-size="10" font-family="monospace" fill="${G.C.muted}">남은 노이즈 단계 ${step}/${N}</text>`;
+    document.getElementById('s1').innerHTML=G.svg(W,H,s,'반복');
+    document.getElementById('cnt1').textContent=`${N-step}/${N} 스텝`;
+    document.getElementById('lab1').innerHTML= step>=N ? `순수 노이즈 — ▶로 되돌리기를 시작하세요.`
+      : step<=0 ? `완성! 🎉 노이즈에서 시작해 ${N}번의 작은 되돌리기로 또렷한 새 글리프가 태어났어요.`
+      : `${N-step}번째 스텝 — 형체가 조금씩 또렷해지죠. 작은 변화가 쌓이는 중.`;
+  }
+  function stepOnce(){ step=Math.max(0,step-1); render(); }
+  document.getElementById('step1').onclick=()=>stepOnce();
+  document.getElementById('run1').onclick=()=>{ if(playing){clearInterval(timer);playing=false;document.getElementById('run1').textContent='자동 ▶▶';return;}
+    playing=true; document.getElementById('run1').textContent='⏸ 멈춤'; timer=setInterval(()=>{ const vis=document.querySelector('section[data-panel="1"]').classList.contains('show'); if(step<=0||!vis){clearInterval(timer);playing=false;document.getElementById('run1').textContent='자동 ▶▶';return;} stepOnce(); },360); };
+  document.getElementById('rs1').onclick=()=>{ if(timer)clearInterval(timer); playing=false; document.getElementById('run1').textContent='자동 ▶▶'; step=N; render(); };
+  render();
+})();
+
+// ===== STEP 2: different noise different image =====
+(function(){
+  let seedBase=1;
+  const play=document.getElementById('play2');
+  play.innerHTML=`<button class="btn" id="d2">다른 출발들 🎲</button>`;
+  function render(){ const W=460,H=200; let s='';
+    s+=`<text x="230" y="16" text-anchor="middle" font-size="10" font-family="monospace" fill="${G.C.muted}">같은 모델, 다른 출발 노이즈 → 다른 생성물</text>`;
+    for(let i=0;i<4;i++){ const seed=seedBase*13+i*97+1; const tgt=targetFor(seed); const cx=80+i*100;
+      s+=G.glyphNoisy(cx,60,18,0.5,0.5,1,seed,{}); // start
+      s+=G.arrow(cx,82,cx,108,{color:'var(--slate)',lw:1});
+      s+=G.glyph(cx,140,22,tgt.z1,tgt.z2,{stroke:'var(--good)',lw:1.2}); // result
+    }
+    s+=`<text x="40" y="64" font-size="8" font-family="monospace" fill="${G.C.faint}">출발</text>`;
+    s+=`<text x="40" y="144" font-size="8" font-family="monospace" fill="${G.C.faint}">결과</text>`;
+    document.getElementById('s2').innerHTML=G.svg(W,H,s,'다양성');
+    document.getElementById('lab2').innerHTML=`네 출발 노이즈가 각기 다른 글리프로 자랐죠. 모델은 하나인데 결과가 다양해요 — <b>출발 노이즈</b>가 그 차이를 만들어요. 🎲로 또 다른 네 개를.`;
+  }
+  document.getElementById('d2').onclick=()=>{seedBase=seedBase*5%997+1;render();};
+  render();
+})();
+
+// ===== STEP 3 =====
+(function(){ const W=460,H=120;
+  let s=`<text x="${W/2}" y="24" text-anchor="middle" font-size="12.5" font-family="monospace" font-weight="700" fill="${G.C.v}">노이즈→반복→새 그림</text>`;
+  const rows=[['출발','무작위 노이즈(원본 불필요)','var(--v)'],['반복','작은 되돌리기 수십 번 → 선명','var(--hot)'],['다양성','출발이 달라 매번 다른 결과','var(--good)']];
+  rows.forEach((r,idx)=>{ const y=38+idx*26; s+=`<rect x="20" y="${y}" width="${W-40}" height="22" rx="6" fill="var(--panel)" stroke="${r[2]}" stroke-width="1.1"/><text x="34" y="${y+15}" fill="${r[2]}" font-size="11" font-family="monospace" font-weight="700">${r[0]}</text><text x="${W-30}" y="${y+15}" fill="var(--ink)" font-size="9.5" font-family="monospace" text-anchor="end">${r[1]}</text>`; });
+  document.getElementById('s3').innerHTML=G.svg(W,H,s,'정리');
+  document.getElementById('lab3').innerHTML='원하는 걸 시키려면 방향을 줘야 — 다음, 조건 주기와 가이던스.';
+})();
+</script>
+</body>
+</html>
