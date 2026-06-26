@@ -150,7 +150,7 @@ const G=VZ.GEN;
     s+=`<text x="410" y="140" text-anchor="middle" font-size="13" font-family="monospace" font-weight="700" fill="${fid<8?G.C.good:G.C.dead}">FID ${fid}</text>`;
     s+=`<text x="410" y="156" text-anchor="middle" font-size="8" font-family="monospace" fill="${G.C.faint}">낮을수록 좋음</text>`;
     document.getElementById('s2').innerHTML=G.svg(W,H,s,'FID');
-    document.getElementById('lab2').innerHTML= q>0.8
+    document.getElementById('lab2').innerHTML= fid<8
       ? `<b style="color:${G.C.good}">FID ${fid}</b> — 두 무리가 거의 겹쳐요. 생성 분포가 진짜 분포를 잘 닮았다는 뜻. 품질을 낮춰 무리가 어긋나면 FID가 치솟아요.`
       : `<b style="color:${G.C.dead}">FID ${fid}</b> — 보라(생성) 무리가 청록(진짜)에서 어긋나 있어요. 한 장이 아니라 <b>무리 전체의 모양</b>을 비교한 점수예요.`;
   }

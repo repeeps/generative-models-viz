@@ -24,7 +24,7 @@
   <header>
     <div class="tag" style="color:var(--v)">PART D · 확산모델 — Diffusion (기둥) — CH 13</div>
     <h1>조건 주기</h1>
-    <p class="intro">지금까진 "아무거나 그럴듯한 것"이 나왔어요. "<b>웃는 얼굴을 그려줘</b>" 같은 주문을 따르게 하려면? 되돌리기 모델에 <b>조건</b>(예: 텍스트)을 같이 입력해, 매 스텝을 그 조건 <b>쪽으로 밀어요</b>. 얼마나 세게 밀지는 손잡이 하나로 정하는데 — 약하면 주문을 잘 안 듣고, 적당하면 충실하면서 다양하고, <b>너무 세면 부자연스럽게 깨져요</b>. 앞 트랙의 규제·임계값 손잡이와 똑같은 "지나치면 손해" 식구예요.</p>
+    <p class="intro">지금까진 "아무거나 그럴듯한 것"이 나왔어요. "<b>웃는 얼굴을 그려줘</b>" 같은 주문을 따르게 하려면? 되돌리기 모델에 <b>조건</b>(예: 텍스트)을 같이 입력해, 매 스텝을 그 조건 <b>쪽으로 밀어요</b>. 얼마나 세게 밀지는 손잡이 하나로 정해요. 약하면 주문을 잘 안 듣고, 적당하면 충실하면서 다양하며, <b>너무 세면 부자연스럽게 깨지죠</b>. 앞 트랙의 규제·임계값 손잡이와 똑같은 "지나치면 손해" 식구예요.</p>
   </header>
 
   <nav class="stepper" id="stepper">
@@ -64,7 +64,7 @@
     <div class="ctl" id="play2"></div>
     <div class="scene" id="s2"></div>
     <p class="big" id="lab2"></p>
-    <div class="nbox">🧭 <b>조건 방향 = (조건 줄 때) − (조건 없을 때)</b> — 이 차이 벡터가 "주문 쪽"을 가리켜요. 그걸 증폭해 미는 게 가이던스고, 세기가 바로 그 손잡이예요. (이 방식의 정식 이름은 글로서리의 "classifier-free guidance" — 이름은 몰라도 돼요.)</div>
+    <div class="nbox">🧭 <b>조건 방향 = (조건 줄 때) − (조건 없을 때)</b> — 이 차이 벡터가 "주문 쪽"을 가리켜요. 그걸 증폭해 미는 게 가이던스고, 세기가 바로 그 손잡이예요. (이 방식의 정식 이름은 "classifier-free guidance" — 이름은 몰라도 돼요.)</div>
     <p class="note" style="margin-top:6px">→ (조건−무조건) 방향을 증폭. 세게 밀수록 충실, 과하면 깨짐.</p>
   </section>
 
@@ -118,9 +118,9 @@ const G=VZ.GEN;
     const R=G.rng(5);
     const adher=VZ.clamp(0.3+0.7*t,0,1);     // smile fidelity
     const spread=VZ.clamp(0.5*(1-t),0,0.5);  // diversity
-    const artifact=VZ.clamp((t-0.8)*2.5,0,0.6); // over-guidance breakage
+    const artifact=VZ.clamp((t-0.8)*3,0,0.6); // over-guidance breakage (g>82부터 가시화)
     for(let i=0;i<4;i++){ const cx=80+i*100; const z1=VZ.clamp(0.5+(R()-0.5)*2*spread,0,1); const z2=VZ.clamp(0.5+adher*0.42,0,1);
-      s+=G.glyphNoisy(cx,100,26,z1,z2,artifact,i*11+3,{stroke: artifact>0.2?'var(--dead)':'var(--good)'}); }
+      s+=G.glyphNoisy(cx,100,26,z1,z2,artifact,i*11+3,{stroke: artifact>0.05?'var(--dead)':'var(--good)'}); }
     document.getElementById('s1').innerHTML=G.svg(W,H,s,'가이던스');
     document.getElementById('gv').textContent=g;
     document.getElementById('lab1').innerHTML= g<20

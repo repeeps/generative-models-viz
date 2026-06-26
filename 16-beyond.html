@@ -73,7 +73,7 @@
   <section class="panel" data-panel="3">
     <span class="kicker" style="color:var(--good)">Step 03 — Recap</span>
     <h2>트랙 회고 — 한 장으로</h2>
-    <p class="lead">먼 길을 왔어요. 핵심만 한 장에 모았어요. 이 다섯 기둥이 머릿속에 남으면, 어떤 생성AI 글·도구를 만나도 "아, 이건 그 척추의 어느 갈래구나" 하고 자리를 잡을 수 있어요.</p>
+    <p class="lead">먼 길을 왔어요. 핵심만 한 장에 모았어요. 이 다섯 갈래가 머릿속에 남으면, 어떤 생성AI 글·도구를 만나도 "아, 이건 그 척추의 어느 갈래구나" 하고 자리를 잡을 수 있어요.</p>
     <div class="recap" id="recap"></div>
     <div class="scene" id="s3"></div>
     <p class="big" id="lab3"></p>
@@ -179,7 +179,7 @@ const G=VZ.GEN;
   document.getElementById('recap').innerHTML=cards.map(c=>`<div class="rcard" style="border-color:${c[2]}"><h4 style="color:${c[2]}">${c[0]}</h4><p>${c[1]}</p></div>`).join('');
   const W=460,H=70; let s=`<text x="${W/2}" y="42" text-anchor="middle" font-size="14" font-family="monospace" font-weight="800" fill="${G.C.good}">분포를 배워 만들어낸다 — 끝까지 왔어요 🎉</text>`;
   document.getElementById('s3').innerHTML=G.svg(W,H,s,'회고');
-  document.getElementById('lab3').innerHTML='이 다섯 기둥이 지도예요. 어떤 새 생성 기법을 만나도, 이 척추의 어느 갈래인지 자리를 잡아보세요.';
+  document.getElementById('lab3').innerHTML='이 다섯 갈래가 지도예요(두 기둥은 VAE·Diffusion). 어떤 새 생성 기법을 만나도, 이 척추의 어느 갈래인지 자리를 잡아보세요.';
 })();
 </script>
 </body>
